@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.mitre</groupId>
 	<artifactId>mitre-db-repository</artifactId>
-	<packaging>jar</packaging>
+	<packaging>war</packaging>
 	<version>0.1</version>
 	<name>mitre-db-repository</name>
 	<build>
@@ -11,14 +11,9 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>2.1.1</version>
+				<version>2.2</version>
 				<configuration>
-					<overlays>
-						<overlay>
-							<groupId>org.mitre</groupId>
-							<artifactId>openid-connect-server</artifactId>
-						</overlay>
-					</overlays>
+					
 				</configuration>
 			</plugin>
 		</plugins>
