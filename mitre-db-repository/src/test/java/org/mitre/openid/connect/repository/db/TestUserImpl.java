@@ -63,10 +63,6 @@ public class TestUserImpl {
 		setup = true;
 		List<User> users = usermanager.find("%");
 		for(User user : users) {
-			Collection<UserAttribute> attrs = usermanager.getAttributes(user);
-			for(UserAttribute attr : attrs) {
-				usermanager.removeAttribute(attr);
-			}
 			usermanager.delete(user.getUsername());
 		}
 		
@@ -240,26 +236,35 @@ public class TestUserImpl {
 	@Test public void testUserAttributes() throws Exception {
 		usermanager.add("meghan", "aAbBcC124%#$");
 		User meghan = usermanager.get("meghan");
+		
 		UserAttribute a1 = new UserAttribute("a", "foo");
 		UserAttribute a2 = new UserAttribute("b", "bar");
-		a1.setUserId(meghan.getId());
-		a2.setUserId(meghan.getId());
-		usermanager.saveAttribute(a1);
-		usermanager.saveAttribute(a2);
+		meghan.getAttributes().add(a1);
+		meghan.getAttributes().add(a2);
+		usermanager.save(meghan);
 		
 		// Grab attributes for meghan and test
-		Collection<UserAttribute> attrs = usermanager.getAttributes(meghan);
-		assertTrue(attrs.contains(a1));
-		assertTrue(attrs.contains(a2));
+		meghan = usermanager.get("meghan");
+		Collection<UserAttribute> attrs = meghan.getAttributes();
+		assertEquals(2, attrs.size());
 		
 		// Remove an attribute
-		usermanager.removeAttribute(a2);
-		attrs = usermanager.getAttributes(meghan);
-		assertTrue(attrs.contains(a1));
-		assertTrue(! attrs.contains(a2));
+		UserAttribute found = null;
+		for(UserAttribute attr : meghan.getAttributes()) {
+			if ("b".equals(attr.getName())) {
+				found = attr;
+			}
+		}
+		if (found != null) {
+			meghan.getAttributes().remove(found);
+			usermanager.save(meghan);
+		}
+		meghan = usermanager.get("meghan");
+		attrs = meghan.getAttributes();
+		assertEquals(1, attrs.size());
 		
 		// Load just one attribute
-		UserAttribute attr = usermanager.loadAttribute(a1.getId());
+		UserAttribute attr = attrs.iterator().next();
 		assertNotNull(attr);
 		assertEquals("a", attr.getName());
 		assertEquals("foo", attr.getValue());
@@ -350,10 +355,11 @@ public class TestUserImpl {
 		usermanager.add(username, password);
 		User u = usermanager.get(username);
 		u.setEmail(email);
+		u.getAttributes().add(new UserAttribute(UserManager.StandardAttributes.FIRST_NAME, firstname, u));
+		u.getAttributes().add(new UserAttribute(UserManager.StandardAttributes.LAST_NAME, lastname, u));
 		usermanager.save(u);
 	
-		usermanager.saveAttribute(new UserAttribute(UserManager.StandardAttributes.FIRST_NAME, firstname, u));
-		usermanager.saveAttribute(new UserAttribute(UserManager.StandardAttributes.LAST_NAME, lastname, u));
+		
 	}
 }
 

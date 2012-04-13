@@ -96,6 +96,10 @@ public class User {
 	)
 	private Set<Role> roles = new HashSet<Role>();
 	
+	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "USER_ID")
+	private Set<UserAttribute> attributes;
+	
 	/**
 	 * @return the id
 	 */
@@ -220,6 +224,20 @@ public class User {
 	 */
 	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
+	}
+
+	/**
+	 * @return the attributes
+	 */
+	public Set<UserAttribute> getAttributes() {
+		return attributes;
+	}
+
+	/**
+	 * @param attributes the attributes to set
+	 */
+	public void setAttributes(Set<UserAttribute> attributes) {
+		this.attributes = attributes;
 	}
 
 	/* (non-Javadoc)

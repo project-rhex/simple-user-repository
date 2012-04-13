@@ -61,7 +61,7 @@
 		<property name="defaultAdminUserName" value="drand" />
 		<property name="mailer" ref="mailhelper" />
 		<property name="passwordRule">
-			<bean class="org.mitre.itflogin.impl.SimplePasswordRule" />
+			<bean class="org.mitre.openid.connect.repository.db.impl.SimplePasswordRule" />
 		</property>
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>

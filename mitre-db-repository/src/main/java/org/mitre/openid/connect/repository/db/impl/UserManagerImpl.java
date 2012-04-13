@@ -39,6 +39,7 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.apache.commons.lang.StringUtils;
+import org.mitre.openid.connect.model.UserInfo;
 import org.mitre.openid.connect.repository.db.IPasswordRule;
 import org.mitre.openid.connect.repository.db.IUserValidity;
 import org.mitre.openid.connect.repository.db.LockedUserException;
@@ -52,6 +53,7 @@ import org.mitre.openid.connect.repository.db.model.UserAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.MailSender;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -60,6 +62,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author DRAND
  */
 @Transactional
+@Repository
 public class UserManagerImpl implements UserManager {
 	private static final Logger logger = LoggerFactory
 			.getLogger(UserManagerImpl.class);
@@ -506,39 +509,89 @@ public class UserManagerImpl implements UserManager {
 		}
 		return rval.toString();
 	}
-	
+		
 	/* (non-Javadoc)
-	 * @see org.mitre.openid.connect.repository.db.UserManager#getAttributes(org.mitre.openid.connect.repository.db.model.User)
+	 * @see org.mitre.openid.connect.repository.UserInfoRepository#getByUserId(java.lang.String)
 	 */
-	public Collection<UserAttribute> getAttributes(User user) {
-		TypedQuery<UserAttribute> uaq = (TypedQuery<UserAttribute>)
-				em.createQuery("select ua from UserAttribute ua where ua.user_id = :id");
-		return uaq.setParameter("id", user.getId()).getResultList();
+	public UserInfo getByUserId(String userId) {
+		if (userId == null || userId.trim().length() == 0) {
+			throw new IllegalArgumentException(
+					"userId should never be null or empty");
+		}
+		Long uid = new Long(userId);
+		User user = em.find(User.class, uid);
+		if (user != null) {
+			Collection<UserAttribute> attrs = user.getAttributes();
+			UserInfo info = new UserInfo();
+			Map<String, String> amap = attributesToMap(attrs);
+			info.setEmail(user.getEmail());
+			info.setFamilyName(amap.get(StandardAttributes.LAST_NAME));
+			info.setGender(amap.get(StandardAttributes.GENDER));
+			info.setGivenName(amap.get(StandardAttributes.FIRST_NAME));
+			info.setMiddleName(amap.get(StandardAttributes.MIDDLE_NAME));
+			info.setNickname(amap.get(StandardAttributes.NICKNAME));
+			info.setPhoneNumber(amap.get(StandardAttributes.PHONE_NUMBER));
+			info.setPicture(amap.get(StandardAttributes.PICTURE));
+			info.setProfile(amap.get(StandardAttributes.PROFILE));
+			info.setUpdatedTime(amap.get(StandardAttributes.UPDATED_TIME));
+			info.setUserId(user.getId().toString());
+			info.setVerified(user.getEmailConfirmed());
+			info.setWebsite(amap.get(StandardAttributes.WEBSITE));
+			info.setZoneinfo(amap.get(StandardAttributes.ZONEINFO));
+			return info;
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Convert attributes into a hash map
+	 * @param attrs
+	 * @return
+	 */
+	private Map<String, String> attributesToMap(Collection<UserAttribute> attrs) {
+		Map<String,String> rval = new HashMap<String, String>();
+		for(UserAttribute attr : attrs) {
+			if (attr.getType() != UserAttribute.NORMAL_TYPE) continue;
+			rval.put(attr.getName(), attr.getValue());
+		}
+		return rval;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.mitre.openid.connect.repository.db.UserManager#loadAttribute(java.lang.Long)
+	 * @see org.mitre.openid.connect.repository.UserInfoRepository#save(org.mitre.openid.connect.model.UserInfo)
 	 */
-	public UserAttribute loadAttribute(Long id) {
-		return em.find(UserAttribute.class, id);
+	public UserInfo save(UserInfo userInfo) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.mitre.openid.connect.repository.db.UserManager#saveAttribute(org.mitre.openid.connect.repository.db.model.UserAttribute)
+	 * @see org.mitre.openid.connect.repository.UserInfoRepository#remove(org.mitre.openid.connect.model.UserInfo)
 	 */
-	public void saveAttribute(UserAttribute attribute) {
-		if (attribute.getId() != null)
-			em.merge(attribute);
-		else
-			em.persist(attribute);
+	public void remove(UserInfo userInfo) {
+		removeByUserId(userInfo.getUserId());
 	}
 
 	/* (non-Javadoc)
-	 * @see org.mitre.openid.connect.repository.db.UserManager#removeAttribute(org.mitre.openid.connect.repository.db.model.UserAttribute)
+	 * @see org.mitre.openid.connect.repository.UserInfoRepository#removeByUserId(java.lang.String)
 	 */
-	public void removeAttribute(UserAttribute attribute) {
-		Query q = em.createQuery("delete from UserAttribute where id = :id");
-		q.setParameter("id", attribute.getId()).executeUpdate();
+	public void removeByUserId(String userId) {
+		if (userId == null || userId.trim().length() == 0) {
+			throw new IllegalArgumentException(
+					"userId should never be null or empty");
+		}
+		Long uid = new Long(userId);
+		Query q = em.createQuery("delete from User where id = :id");
+		q.setParameter("id", uid).executeUpdate();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.openid.connect.repository.UserInfoRepository#getAll()
+	 */
+	public Collection<UserInfo> getAll() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/**

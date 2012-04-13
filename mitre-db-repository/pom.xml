@@ -25,6 +25,16 @@
 		<spring.security.version>3.1.0.RELEASE</spring.security.version>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>org.mitre</groupId>
+			<artifactId>openid-connect-server</artifactId>
+			<version>0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mitre</groupId>
+			<artifactId>openid-connect-common</artifactId>
+			<version>0.1</version>
+		</dependency>
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
