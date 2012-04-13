@@ -25,22 +25,46 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Resource;
 import javax.naming.AuthenticationException;
 
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mitre.openid.connect.repository.db.model.Role;
 import org.mitre.openid.connect.repository.db.model.User;
+import org.mitre.openid.connect.repository.db.model.UserAttribute;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/org/mitre/itflogin/test/test.xml" })
+@ContextConfiguration(locations = { "/org/mitre/openid/connect/repository/db/test.xml" })
 public class TestUserImpl {
 	@Resource UserManager usermanager;
+	
+	public static boolean setup = false;
+	
+	@Before
+	public void testSetup() throws Exception {
+		if (setup) return;
+		setup = true;
+		List<User> users = usermanager.find("%");
+		for(User user : users) {
+			Collection<UserAttribute> attrs = usermanager.getAttributes(user);
+			for(UserAttribute attr : attrs) {
+				usermanager.removeAttribute(attr);
+			}
+			usermanager.delete(user.getUsername());
+		}
+		
+		usermanager.deleteRole("GUEST");
+		usermanager.deleteRole("ADMIN");
+		usermanager.testAndInitialize();
+	}
 	
 	@Test public void testSalting() throws Exception {
 		String val1 = usermanager.salt(0x10020110, "Fido1234$");
@@ -166,8 +190,69 @@ public class TestUserImpl {
 	}
 	
 	@Test public void testFind() throws Exception {
-		List<User> users = usermanager.find("J%");
+		usermanager.add("zooey", "xzCB15%#");
+		usermanager.add("zaaney", "xzCB15%#");
+		List<User> users = usermanager.find("Z%");
 		assertNotNull(users);
 		assertTrue(users.size() > 0);
+	}
+	
+	@Test public void testRoleMembership() throws Exception {
+		usermanager.add("charlie", "xaBC95(#");
+		User c = usermanager.get("charlie");
+		Role g = usermanager.findRole("GUEST");
+		c.getRoles().add(g);
+		usermanager.save(c);
+		
+		// Check persistence
+		c = usermanager.get("charlie");
+		assertTrue(c.getRoles().size() > 0);
+		assertEquals(g, c.getRoles().iterator().next());
+		
+		// Add another role, remove original role
+		Role t = usermanager.findRole("TEST");
+		c.getRoles().add(usermanager.findRole("TEST"));
+		c.getRoles().remove(g);
+		usermanager.save(c);
+		
+		// Check again
+		c = usermanager.get("charlie");
+		assertTrue(c.getRoles().size() > 0);
+		assertEquals(t, c.getRoles().iterator().next());
+		
+		// Remove the test role
+		c.getRoles().remove(t);
+		usermanager.save(c);
+		
+		c = usermanager.get("charlie");
+		assertTrue(c.getRoles().isEmpty());
+	}
+	
+	@Test public void testUserAttributes() throws Exception {
+		usermanager.add("meghan", "aAbBcC124%#$");
+		User meghan = usermanager.get("meghan");
+		UserAttribute a1 = new UserAttribute("a", "foo");
+		UserAttribute a2 = new UserAttribute("b", "bar");
+		a1.setUserId(meghan.getId());
+		a2.setUserId(meghan.getId());
+		usermanager.saveAttribute(a1);
+		usermanager.saveAttribute(a2);
+		
+		// Grab attributes for meghan and test
+		Collection<UserAttribute> attrs = usermanager.getAttributes(meghan);
+		assertTrue(attrs.contains(a1));
+		assertTrue(attrs.contains(a2));
+		
+		// Remove an attribute
+		usermanager.removeAttribute(a2);
+		attrs = usermanager.getAttributes(meghan);
+		assertTrue(attrs.contains(a1));
+		assertTrue(! attrs.contains(a2));
+		
+		// Load just one attribute
+		UserAttribute attr = usermanager.loadAttribute(a1.getId());
+		assertNotNull(attr);
+		assertEquals("a", attr.getName());
+		assertEquals("foo", attr.getValue());
 	}
 }

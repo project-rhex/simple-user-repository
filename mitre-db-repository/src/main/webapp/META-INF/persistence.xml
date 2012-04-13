@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="1.0">
-  <persistence-unit name="user_repository" transaction-type="RESOURCE_LOCAL">
-    <class>com.apress.javaee6.chapter02.Book</class>
-    <properties>
-      <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
-      <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/users"/>
-      <property name="javax.persistence.jdbc.user" value="userdb"/>
-      <property name="javax.persistence.jdbc.password" value="userdb"/>
-    </properties>
-  </persistence-unit>
-</persistence>        
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
+    version="1.0">
+    <persistence-unit name="user_datastore" transaction-type="RESOURCE_LOCAL">
+    	<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    	<class>org.mitre.openid.connect.repository.db.model.User</class>
+    	<class>org.mitre.openid.connect.repository.db.model.Role</class>
+    	<class>org.mitre.openid.connect.repository.db.model.UserAttribute</class>
+        <properties>
+         	<property name="eclipselink.logging.file" value="c:/temp/jpaoutput.log"/>
+         	<property name="eclipselink.logging.level" value="FINE"/>
+        </properties>
+    </persistence-unit>
+</persistence>

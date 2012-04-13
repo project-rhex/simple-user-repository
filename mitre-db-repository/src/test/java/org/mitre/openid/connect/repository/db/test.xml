@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns='http://www.springframework.org/schema/beans'
+	xmlns:context='http://www.springframework.org/schema/context'
 	xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
 	xmlns:util="http://www.springframework.org/schema/util"
 	xmlns:tx="http://www.springframework.org/schema/tx"
 	xsi:schemaLocation='
-	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd
-	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd'>
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd'>
+	
+	<context:annotation-config />
+	<!-- <context:load-time-weaver weaver-class="org.springframework.instrument.classloading.SimpleLoadTimeWeaver" /> -->
 	
 	<!-- enable the configuration of transactional behavior based on annotations -->
-	<tx:annotation-driven transaction-manager="txManager" />
-	
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
 	<bean id="propertyConfigurer"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">
@@ -20,55 +25,33 @@
 		</property>
 	</bean>
 	
-	<bean id="dbSource" class="org.springframework.jdbc.datasource.SingleConnectionDataSource">
-		<constructor-arg value="${jdbc.driverClass}" />
-		<constructor-arg value="${jdbc.url}" />
-		<constructor-arg value="${jdbc.username}" />
-		<constructor-arg value="${jdbc.password}" />
-		<constructor-arg value="true" />		
-	</bean>
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+    	<property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
+          
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalEntityManagerFactoryBean">
+        <property name="persistenceUnitName" value="user_datastore" />
+        <!--  <property name="persistenceXmlLocation" 
+        	value="classpath:/org/mitre/openid/connect/repository/db/persistence.xml" />  -->
+        <property name="jpaProperties">
+         	<props>
+         		<prop key="javax.persistence.jdbc.driver">${jdbc.driverClass}</prop>
+         		<prop key="javax.persistence.jdbc.url">${jdbc.url}</prop>
+         		<prop key="javax.persistence.jdbc.user">${jdbc.username}</prop>
+         		<prop key="javax.persistence.jdbc.password">${jdbc.password}</prop>
+         	</props>
+        </property>
+    </bean>
 	
-	<bean id="sessionFactory"
-		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
-		<property name="dataSource" ref="dbSource" />
-		<property name="configLocation"
-			value="classpath:/org/mitre/itflogin/hibernate.cfg.xml" />
-		<property name="hibernateProperties">
-			<util:properties>
-				<prop key="hibernate.jdbc.batch_size">500</prop>
-				<prop key="hibernate.cache.use_second_level_cache">false</prop>
-				<prop key="hibernate.show_sql">true</prop>
-				<prop key="hibernate.dialect">${hibernate.dialect}</prop>
-				<prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}</prop>
-			</util:properties>
-		</property>
-		<property name="annotatedClasses">
-			<util:list>
-				<value>org.mitre.itflogin.model.User</value>
-				<value>org.mitre.itflogin.model.Role</value>
-			</util:list>
-		</property>
-	</bean>
-	
-	<bean id="txManager"
-		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
-		<property name="sessionFactory" ref="sessionFactory" />
-	</bean>
-	
-	<bean id="usermanager" class="org.mitre.itflogin.impl.UserManagerImpl">
+	<bean id="usermanager" class="org.mitre.openid.connect.repository.db.impl.UserManagerImpl">
 		<property name="attemptLimit" value="3" />
 		<property name="base" value="http://10.10.10.3:8180/foobar" />
 		<property name="defaultAdminUserEmail" value="drand@mitre.org" />
 		<property name="defaultAdminUserName" value="drand" />
-		<property name="mailer" ref="mailhelper" />
+		<property name="mailer" ref="sender" />
 		<property name="passwordRule">
-			<bean class="org.mitre.itflogin.impl.SimplePasswordRule" />
+			<bean class="org.mitre.openid.connect.repository.db.impl.SimplePasswordRule" />
 		</property>
-		<property name="sessionFactory" ref="sessionFactory" />
-	</bean>
-	
-	<bean id="mailhelper" class="org.mitre.itflogin.mail.MailHelper">
-		<property name="sender" ref="sender" />
 	</bean>
 	
 	<bean id="sender" class="org.springframework.mail.javamail.JavaMailSenderImpl">

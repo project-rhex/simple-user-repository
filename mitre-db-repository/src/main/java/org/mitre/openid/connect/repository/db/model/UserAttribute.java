@@ -32,23 +32,36 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import org.eclipse.persistence.indirection.ValueHolderInterface;
+
 @Entity
 @Table(name = "USER_ATTRIBUTES")
 public class UserAttribute {
+	/**
+	 * Regular attribute value attribute
+	 */
+	public static final short NORMAL_TYPE = 0;
+	/**
+	 * A named referenced to a remote link stored in the value. The access
+	 * token is needed to obtain the data. The expiration is the expiration
+	 * of the access token. The protocol used to obtain the data is OAUTH2.
+	 */
+	public static final short REMOTE_TYPE = 1;
+	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	Long id;
 	
 	@Basic
-	@Column(name = "NAME", length = 32)
+	@Column(name = "ATTR_NAME", length = 32)
 	String name;
 	
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
-	@JoinColumn(name = "USER_ID")
-	User user;
+	@Basic
+	@Column(name = "USER_ID")
+	Long user_id;
 	
 	@Basic
-	@Column(name = "TYPE")
+	@Column(name = "ATTR_TYPE")
 	Short type;
 	
 	/**
@@ -56,7 +69,7 @@ public class UserAttribute {
 	 * may be an access token
 	 */
 	@Basic
-	@Column(name = "VALUE", length = 2000)
+	@Column(name = "ATTR_VALUE", length = 2000)
 	String value;
 	
 	@Basic
@@ -64,9 +77,27 @@ public class UserAttribute {
 	String access_token;
 	
 	@Basic
-	@Column(name = "EXPIRATION", nullable = true)
+	@Column(name = "TOKEN_EXPIRATION", nullable = true)
 	Date expiration;
 
+	/**
+	 * Empty ctor
+	 */
+	public UserAttribute() {
+		// Intentionally empty
+	}
+	
+	/**
+	 * Ctor
+	 * @param name a non-empty name for the user attribute
+	 * @param value
+	 */
+	public UserAttribute(String name, String value) {
+		setName(name);
+		setValue(value);
+		setType(NORMAL_TYPE);
+	}
+	
 	/**
 	 * @return the id
 	 */
@@ -95,7 +126,7 @@ public class UserAttribute {
 	}
 
 	/**
-	 * @return the type
+	 * @return the type, a type of 
 	 */
 	public Short getType() {
 		return type;
@@ -150,4 +181,84 @@ public class UserAttribute {
 		this.expiration = expiration;
 	}
 
+	/**
+	 * @return the user_id
+	 */
+	public Long getUserId() {
+		return user_id;
+	}
+
+	/**
+	 * @param user_id the user_id to set
+	 */
+	public void setUserId(Long user_id) {
+		this.user_id = user_id;
+	}
+
+	/*
+	 * The hashCode and equals method exclude user_id intentionally
+	 */
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((access_token == null) ? 0 : access_token.hashCode());
+		result = prime * result
+				+ ((expiration == null) ? 0 : expiration.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UserAttribute other = (UserAttribute) obj;
+		if (access_token == null) {
+			if (other.access_token != null)
+				return false;
+		} else if (!access_token.equals(other.access_token))
+			return false;
+		if (expiration == null) {
+			if (other.expiration != null)
+				return false;
+		} else if (!expiration.equals(other.expiration))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (type == null) {
+			if (other.type != null)
+				return false;
+		} else if (!type.equals(other.type))
+			return false;
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
+			return false;
+		return true;
+	}	
 }

@@ -29,10 +29,15 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.eclipse.persistence.indirection.ValueHolder;
+import org.eclipse.persistence.indirection.ValueHolderInterface;
 
 /**
  * Represents a single user to the system. Each user is identified by their 
@@ -80,7 +85,15 @@ public class User {
 	@Column(name = "FAILED_ATTEMPTS")
 	private Integer failedAttempts = 0;
 	
-	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinTable(name = "USERS_ROLES",
+		joinColumns = {
+			@JoinColumn(name="USER_ID")
+		},
+		inverseJoinColumns = {
+			@JoinColumn(name="ROLE_ID")
+		}
+	)
 	private Set<Role> roles = new HashSet<Role>();
 	
 	/**
@@ -207,14 +220,6 @@ public class User {
 	 */
 	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
-	}	
-	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object other) {
-		return EqualsBuilder.reflectionEquals(this, other);
 	}
 
 	/* (non-Javadoc)
@@ -222,6 +227,84 @@ public class User {
 	 */
 	@Override
 	public int hashCode() {
-		return username.hashCode();
+		final int prime = 31;
+		int result = 1;
+		result = prime
+				* result
+				+ ((confirmationHash == null) ? 0 : confirmationHash.hashCode());
+		result = prime * result + ((email == null) ? 0 : email.hashCode());
+		result = prime * result
+				+ ((emailConfirmed == null) ? 0 : emailConfirmed.hashCode());
+		result = prime * result
+				+ ((failedAttempts == null) ? 0 : failedAttempts.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result
+				+ ((passwordHash == null) ? 0 : passwordHash.hashCode());
+		result = prime * result
+				+ ((passwordSalt == null) ? 0 : passwordSalt.hashCode());
+		result = prime * result + ((roles == null) ? 0 : roles.hashCode());
+		result = prime * result
+				+ ((username == null) ? 0 : username.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		User other = (User) obj;
+		if (confirmationHash == null) {
+			if (other.confirmationHash != null)
+				return false;
+		} else if (!confirmationHash.equals(other.confirmationHash))
+			return false;
+		if (email == null) {
+			if (other.email != null)
+				return false;
+		} else if (!email.equals(other.email))
+			return false;
+		if (emailConfirmed == null) {
+			if (other.emailConfirmed != null)
+				return false;
+		} else if (!emailConfirmed.equals(other.emailConfirmed))
+			return false;
+		if (failedAttempts == null) {
+			if (other.failedAttempts != null)
+				return false;
+		} else if (!failedAttempts.equals(other.failedAttempts))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (passwordHash == null) {
+			if (other.passwordHash != null)
+				return false;
+		} else if (!passwordHash.equals(other.passwordHash))
+			return false;
+		if (passwordSalt == null) {
+			if (other.passwordSalt != null)
+				return false;
+		} else if (!passwordSalt.equals(other.passwordSalt))
+			return false;
+		if (roles == null) {
+			if (other.roles != null)
+				return false;
+		} else if (!roles.equals(other.roles))
+			return false;
+		if (username == null) {
+			if (other.username != null)
+				return false;
+		} else if (!username.equals(other.username))
+			return false;
+		return true;
 	}
 }

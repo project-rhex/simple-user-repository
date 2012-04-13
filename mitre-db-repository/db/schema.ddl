@@ -1,6 +1,6 @@
 use userdb; 	
 	
-drop table user_roles;
+	drop table users_roles;
 	drop table user_attributes;
 	drop table users;
 	drop table roles;
@@ -12,12 +12,12 @@ drop table user_roles;
         CONFIRMED tinyint,
         FAILED_ATTEMPTS smallint,
         PASSWORD_HASH varchar(128) not null,
-        PASSWORD_SALT smallint,
+        PASSWORD_SALT int,
         USERNAME varchar(48) not null unique,
         primary key (USER_ID)
     );
 
-    create table USER_ROLES (
+    create table USERS_ROLES (
         USER_ID int not null,
         ROLE_ID int not null,
         primary key (USER_ID, ROLE_ID)
@@ -30,25 +30,25 @@ drop table user_roles;
         primary key (ROLE_ID)
     );
 
-    alter table USER_ROLES 
-        add constraint FK_ROLES_ROLE_ID 
+    alter table USERS_ROLES 
+        add constraint FK_UR_ROLE_ID 
         foreign key (ROLE_ID) 
         references ROLES(ROLE_ID);
 
-    alter table USER_ROLES 
-        add constraint FK_ROLES_USER_ID 
+    alter table USERS_ROLES 
+        add constraint FK_UR_USER_ID 
         foreign key (USER_ID) 
         references USERS(USER_ID);
 
 	create table USER_ATTRIBUTES (
-		ATTRIBUTE_ID int not null auto_increment,
-		USER_ID int not null,
+		ID int not null auto_increment,
+		USER_ID int,
 		ATTR_NAME varchar(64) not null,
-		IS_TOKEN tinyint,
+		ATTR_TYPE smallint,
 		ATTR_VALUE varchar(1024),
 		ACCESS_TOKEN varchar(1024),
 		TOKEN_EXPIRATION datetime,
-		primary key (ATTRIBUTE_ID)
+		primary key (ID)
 	);
 	
 	alter table USER_ATTRIBUTES

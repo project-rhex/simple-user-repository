@@ -24,12 +24,15 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.naming.AuthenticationException;
 import javax.persistence.EntityManager;
+import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.apache.commons.lang.StringUtils;
@@ -41,6 +44,7 @@ import org.mitre.openid.connect.repository.db.UserException;
 import org.mitre.openid.connect.repository.db.UserManager;
 import org.mitre.openid.connect.repository.db.model.Role;
 import org.mitre.openid.connect.repository.db.model.User;
+import org.mitre.openid.connect.repository.db.model.UserAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.MailSender;
@@ -103,37 +107,25 @@ public class UserManagerImpl implements UserManager {
 	 * If the repository has no users that are administrators, create one based
 	 * on the configuration. Also, create the admin role if it doesn't exist.
 	 */
-	@PostConstruct
-	public void onCreation() {
+	public void testAndInitialize() {
 		@SuppressWarnings("unchecked")
-		TypedQuery<Role> query = (TypedQuery<Role>) em.createQuery("from Role where name = 'ADMIN'");
-		List<Role> roles = query.getResultList();
-		Role admin;
-		if (roles.size() == 0) {
-			admin = new Role();
-			admin.setId(1L);
-			admin.setName("ADMIN");
-			em.persist(admin);
-		} else {
-			admin = roles.get(0);
-		}
-
+		Role admin = findRole("ADMIN");
+		// Find admin users only
 		TypedQuery<User> uq = (TypedQuery<User>) 
 				em.createQuery("select u from User u inner join u.roles r where r.name = 'ADMIN'");
 		List<User> users = uq.getResultList();
 		if (users.size() == 0) {
-			if (StringUtils.isBlank(defaultAdminUserEmail) || 
-					StringUtils.isBlank(defaultAdminUserName)) {
+			if (StringUtils.isBlank(defaultAdminUserName)) {
 				logger.warn("Cannot create default user");
 				return;
 			}
 			User defaultAdminUser = new User();
 			defaultAdminUser.setUsername(defaultAdminUserName);
 			defaultAdminUser.setEmail(defaultAdminUserEmail);
-			String randomPassword = "p" + random.nextLong();
+			String initialpw = "PassWord";
 			int randomSalt = random.nextInt();
 			try {
-				String randomHash = salt(randomSalt, randomPassword);
+				String randomHash = salt(randomSalt, initialpw);
 				defaultAdminUser.setPasswordHash(randomHash);
 				defaultAdminUser.setPasswordSalt(randomSalt);
 				defaultAdminUser.getRoles().add(admin);
@@ -158,7 +150,7 @@ public class UserManagerImpl implements UserManager {
 		}
 		@SuppressWarnings("unchecked")
 		TypedQuery<User> uq = (TypedQuery<User>) em.createQuery(
-				"select u from User u where username = :username");
+				"select u from User u where u.username = :username");
 		List<User> results = uq.setParameter("username", username).getResultList();
 		return results.size() > 0 ? results.get(0) : null;
 	}
@@ -171,7 +163,10 @@ public class UserManagerImpl implements UserManager {
 			throw new IllegalArgumentException(
 					"user should never be null");
 		}
-		em.persist(user);
+		if (user.getId() == null)
+			em.persist(user);
+		else
+			em.merge(user);
 	}
 	
 	/*
@@ -189,9 +184,25 @@ public class UserManagerImpl implements UserManager {
 		} else {
 			logger.warn("User could not be found: " + username);
 		}
-	}	
+	}
 	
 	
+	/* (non-Javadoc)
+	 * @see org.mitre.openid.connect.repository.db.UserManager#deleteRole(java.lang.String)
+	 */
+	public void deleteRole(String rolename) {
+		if (rolename == null || rolename.trim().length() == 0) {
+			throw new IllegalArgumentException(
+					"rolename should never be null or empty");
+		}
+		Role existing = findRole(rolename);
+		if (existing != null) {
+			em.remove(existing);
+		} else {
+			logger.warn("Role could not be found: " + rolename);
+		}
+		
+	}
 
 	/* (non-Javadoc)
 	 * @see org.mitre.itflogin.UserManager#find(java.lang.String)
@@ -204,11 +215,13 @@ public class UserManagerImpl implements UserManager {
 		}
 		@SuppressWarnings("unchecked")
 		TypedQuery<User> uq = (TypedQuery<User>) em.createQuery(
-				"select u from User u where username ilike :pattern");
-		List<User> results = uq.setParameter("pattern", likePattern).getResultList();
+				"select u from User u where lower(u.username) like :pattern");
+		List<User> results = uq.setParameter("pattern", likePattern.toLowerCase()).getResultList();
 		return results;
 	}
 
+	private final static String ROLE_Q_BY_NAME = "select r from Role r where r.name = :name";
+	
 	/* (non-Javadoc)
 	 * @see org.mitre.itflogin.UserManager#find(java.lang.String)
 	 */
@@ -218,14 +231,13 @@ public class UserManagerImpl implements UserManager {
 					"rolename should never be null or empty");
 		}
 		@SuppressWarnings("unchecked")
-		TypedQuery<Role> rq = (TypedQuery<Role>) em.createQuery(
-				"select r from Role r where name = :name");
+		TypedQuery<Role> rq = (TypedQuery<Role>) em.createQuery(ROLE_Q_BY_NAME);
 		List<Role> found = rq.setParameter("name", rolename).getResultList();
 		if (found.size() == 0) {
 			Role role = new Role();
 			role.setName(rolename);
 			em.persist(role);
-			return findRole(rolename);
+			return role;
 		} else {
 			return found.get(0);
 		}
@@ -448,6 +460,40 @@ public class UserManagerImpl implements UserManager {
 			rval.append(part);
 		}
 		return rval.toString();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.mitre.openid.connect.repository.db.UserManager#getAttributes(org.mitre.openid.connect.repository.db.model.User)
+	 */
+	public Collection<UserAttribute> getAttributes(User user) {
+		TypedQuery<UserAttribute> uaq = (TypedQuery<UserAttribute>)
+				em.createQuery("select ua from UserAttribute ua where ua.user_id = :id");
+		return uaq.setParameter("id", user.getId()).getResultList();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.openid.connect.repository.db.UserManager#loadAttribute(java.lang.Long)
+	 */
+	public UserAttribute loadAttribute(Long id) {
+		return em.find(UserAttribute.class, id);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.openid.connect.repository.db.UserManager#saveAttribute(org.mitre.openid.connect.repository.db.model.UserAttribute)
+	 */
+	public void saveAttribute(UserAttribute attribute) {
+		if (attribute.getId() != null)
+			em.merge(attribute);
+		else
+			em.persist(attribute);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.openid.connect.repository.db.UserManager#removeAttribute(org.mitre.openid.connect.repository.db.model.UserAttribute)
+	 */
+	public void removeAttribute(UserAttribute attribute) {
+		Query q = em.createQuery("delete from UserAttribute where id = :id");
+		q.setParameter("id", attribute.getId()).executeUpdate();
 	}
 
 	/**

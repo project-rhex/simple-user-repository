@@ -21,12 +21,14 @@ package org.mitre.openid.connect.repository.db;
 import java.io.IOException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
 import java.util.List;
 
 import javax.naming.AuthenticationException;
 
 import org.mitre.openid.connect.repository.db.model.Role;
 import org.mitre.openid.connect.repository.db.model.User;
+import org.mitre.openid.connect.repository.db.model.UserAttribute;
 
 /**
  * The user manager performs all internal tasks related to CRUD operations,
@@ -36,6 +38,11 @@ import org.mitre.openid.connect.repository.db.model.User;
  *
  */
 public interface UserManager {
+	/**
+	 * Check the database and create any required users and roles.
+	 */
+	void testAndInitialize();
+	
 	/**
 	 * Lookup user by name
 	 * 
@@ -59,6 +66,13 @@ public interface UserManager {
 	 * @param username never <code>null</code> or empty
 	 */
 	void delete(String username);
+	
+	/**
+	 * Delete role
+	 * 
+	 * @param rolename never <code>null</code> or empty
+	 */
+	void deleteRole(String rolename);
 
 	/**
 	 * Find or create role by name. May be used to find roles in order to add
@@ -167,4 +181,40 @@ public interface UserManager {
 	 * @return a list of matching users
 	 */
 	List<User> find(String likePattern);
+	
+	/**
+	 * Find and return the attributes belonging to the given user name
+	 * 
+	 * @param username the user, never <code>null</code> or empty
+	 * @return a collection of user attribute records
+	 */
+	Collection<UserAttribute> getAttributes(User user);
+	
+	/**
+	 * Load a given user attribute record by primary key
+	 * 
+	 * @param id the primary key for the user attribute record
+	 * @return the user attribute or <code>null</code> if one is not found
+	 */
+	UserAttribute loadAttribute(Long id);
+	
+	/**
+	 * Saves a single user attribute. Note that the user id is part of the 
+	 * information in the UserAttribute object, so saving it will automatically
+	 * add it to the collection via the foreign key relationship. Use 
+	 * {@link #get(String)} to obtain the appropriate {@link User} in order to
+	 * get the primary key data.
+	 * 
+	 * @param attribute the attribute to save.
+	 */
+	void saveAttribute(UserAttribute attribute);
+	
+	/**
+	 * Remove a single user attribute from the data store. Note that removing
+	 * the attribute is sufficient to remove it from the parent user's collection
+	 * via the foreign key relationship.
+	 * 
+	 * @param attribute the attribute to remove.
+	 */
+	void removeAttribute(UserAttribute attribute);
 }
