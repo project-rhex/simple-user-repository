@@ -23,6 +23,7 @@ import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.naming.AuthenticationException;
 
@@ -38,6 +39,17 @@ import org.mitre.openid.connect.repository.db.model.UserAttribute;
  *
  */
 public interface UserManager {
+	/**
+	 * Any attributes that are in SortBy must agree in spelling and case.
+	 */
+	public enum StandardAttributes {
+		FIRST_NAME, LAST_NAME
+	}
+	
+	public enum SortBy {
+		USERNAME, FIRST_NAME, LAST_NAME, EMAIL
+	}
+
 	/**
 	 * Check the database and create any required users and roles.
 	 */
@@ -183,9 +195,19 @@ public interface UserManager {
 	List<User> find(String likePattern);
 	
 	/**
+	 * Retrieve a set of information sorted by the given attribute
+	 * 
+	 * @param first initial offset into the user collection given the sorting
+	 * @param count the number of results to return (maximum)
+	 * @param sortBy the attribute to sort by
+	 * @return user objects in a list, possibly an empty set
+	 */
+	List<Map<String, String>> findInRange(int first, int count, SortBy sortBy);
+	
+	/**
 	 * Find and return the attributes belonging to the given user name
 	 * 
-	 * @param username the user, never <code>null</code> or empty
+	 * @param USERNAME the user, never <code>null</code> or empty
 	 * @return a collection of user attribute records
 	 */
 	Collection<UserAttribute> getAttributes(User user);

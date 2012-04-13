@@ -24,8 +24,11 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.naming.AuthenticationException;
@@ -42,6 +45,7 @@ import org.mitre.openid.connect.repository.db.LockedUserException;
 import org.mitre.openid.connect.repository.db.PasswordException;
 import org.mitre.openid.connect.repository.db.UserException;
 import org.mitre.openid.connect.repository.db.UserManager;
+import org.mitre.openid.connect.repository.db.UserManager.SortBy;
 import org.mitre.openid.connect.repository.db.model.Role;
 import org.mitre.openid.connect.repository.db.model.User;
 import org.mitre.openid.connect.repository.db.model.UserAttribute;
@@ -219,6 +223,47 @@ public class UserManagerImpl implements UserManager {
 		List<User> results = uq.setParameter("pattern", likePattern.toLowerCase()).getResultList();
 		return results;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.mitre.openid.connect.repository.db.UserManager#findInRange(int, int, org.mitre.openid.connect.repository.db.UserManager.SortBy)
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Map<String, String>> findInRange(int first, int count, SortBy sortBy) {
+		List<User> users;
+		if (sortBy.equals(SortBy.USERNAME) || sortBy.equals(SortBy.EMAIL)) {
+			TypedQuery<User> uq = (TypedQuery<User>) em.createQuery(
+					"select u from User u order by u." + sortBy.name().toLowerCase());
+			users = uq.setFirstResult(first)
+					.setMaxResults(count)
+					.getResultList();
+		} else {
+			TypedQuery<User> uq = (TypedQuery<User>) em.createQuery(
+					"select u from User u, UserAttribute ua " +
+					"where u.id = ua.user_id and " +
+					"ua.name = :attr order by ua.value");
+			users = uq.setParameter("attr", sortBy.name())
+					.setFirstResult(first)
+					.setMaxResults(count)
+					.getResultList();
+		}
+		List<Map<String,String>> rval = new ArrayList<Map<String,String>>();
+		for(User u : users) {
+			Map<String, String> data = new HashMap<String, String>();
+			Query q = em.createNamedQuery("user_attributes_find_by_user_id");
+			List<UserAttribute> attrs = q.setParameter("id", u.getId()).getResultList();
+			for(UserAttribute attr : attrs) {
+				if (attr.getType() != UserAttribute.NORMAL_TYPE) continue;
+				data.put(attr.getName(), attr.getValue());
+			}
+			data.put("USERNAME", u.getUsername());
+			data.put("EMAIL", u.getEmail());
+			data.put("ID", u.getId().toString());
+			rval.add(data);
+		}
+		return rval;
+	}
+
+
 
 	private final static String ROLE_Q_BY_NAME = "select r from Role r where r.name = :name";
 	

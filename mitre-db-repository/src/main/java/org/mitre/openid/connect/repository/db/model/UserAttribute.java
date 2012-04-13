@@ -29,13 +29,17 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.eclipse.persistence.indirection.ValueHolderInterface;
+import org.mitre.openid.connect.repository.db.UserManager;
 
 @Entity
 @Table(name = "USER_ATTRIBUTES")
+@NamedQuery(query="select ua from UserAttribute ua where ua.user_id = :id", 
+			name = "user_attributes_find_by_user_id")
 public class UserAttribute {
 	/**
 	 * Regular attribute value attribute
@@ -89,13 +93,32 @@ public class UserAttribute {
 	
 	/**
 	 * Ctor
+	 * @param name
+	 * @param value
+	 * @param params
+	 */
+	public UserAttribute(UserManager.StandardAttributes name, String value, Object... params) {
+		this(name.name(), value, params);
+	}
+	
+	/**
+	 * Ctor
 	 * @param name a non-empty name for the user attribute
 	 * @param value
+	 * @param params
 	 */
-	public UserAttribute(String name, String value) {
+	public UserAttribute(String name, String value, Object... params) {
 		setName(name);
 		setValue(value);
 		setType(NORMAL_TYPE);
+		if (params.length > 0) {
+			Object obj = params[0];
+			if (obj instanceof User) {
+				user_id = ((User) obj).getId();
+			} else {
+				throw new IllegalArgumentException("The third argument should be a user object");
+			}
+		}
 	}
 	
 	/**

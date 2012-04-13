@@ -27,20 +27,29 @@ import static org.junit.Assert.fail;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.naming.AuthenticationException;
 
+import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mitre.openid.connect.repository.db.UserManager.SortBy;
 import org.mitre.openid.connect.repository.db.model.Role;
 import org.mitre.openid.connect.repository.db.model.User;
 import org.mitre.openid.connect.repository.db.model.UserAttribute;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+/**
+ * To run this test put the webapp directory on the unit test classpath or
+ * persistence.xml won't be found by jpa.
+ * 
+ * @author DRAND
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/org/mitre/openid/connect/repository/db/test.xml" })
 public class TestUserImpl {
@@ -255,4 +264,96 @@ public class TestUserImpl {
 		assertEquals("a", attr.getName());
 		assertEquals("foo", attr.getValue());
 	}
+	
+	@Test public void testRangeAndSortFinder() throws Exception {
+		for(int i = 0; i < 100; i++) {
+			try {
+				createUser();
+			} catch(Exception e) {
+				// It's ok, we're bound to clobber a user or two
+			}
+		}
+		
+		List<Map<String, String>> results = usermanager.findInRange(0, 10, SortBy.FIRST_NAME);
+		assertNotNull(results);
+		assertEquals(10, results.size());
+		testOrdering(UserManager.SortBy.FIRST_NAME, results);
+		
+		results = usermanager.findInRange(30, 10, SortBy.FIRST_NAME);
+		assertNotNull(results);
+		assertEquals(10, results.size());
+		testOrdering(UserManager.SortBy.FIRST_NAME, results);
+		
+		results = usermanager.findInRange(50, 10, SortBy.LAST_NAME);
+		assertNotNull(results);
+		assertEquals(10, results.size());
+		testOrdering(UserManager.SortBy.LAST_NAME, results);
+		
+		results = usermanager.findInRange(5, 10, SortBy.EMAIL);
+		assertNotNull(results);
+		assertEquals(10, results.size());
+		testOrdering(UserManager.SortBy.EMAIL, results);
+		
+		results = usermanager.findInRange(55, 10, SortBy.EMAIL);
+		assertNotNull(results);
+		assertEquals(10, results.size());
+		testOrdering(UserManager.SortBy.EMAIL, results);
+		
+		results = usermanager.findInRange(0, 20, SortBy.USERNAME);
+		assertNotNull(results);
+		assertEquals(20, results.size());
+		testOrdering(UserManager.SortBy.USERNAME, results);
+		
+		results = usermanager.findInRange(75, 20, SortBy.USERNAME);
+		assertNotNull(results);
+		assertEquals(20, results.size());
+		testOrdering(UserManager.SortBy.USERNAME, results);		
+	}
+	
+	private void testOrdering(SortBy key,
+			List<Map<String, String>> results) {
+		String lookup = key.name();
+		for(int i = 0; i < results.size() - 1; i++) {
+			Map<String, String> r0 = results.get(i);
+			Map<String, String> r1 = results.get(i + 1);
+			String v0 = r0.get(lookup);
+			String v1 = r1.get(lookup);
+			assertTrue(! (v0.compareTo(v1) > 0));
+		}
+	}
+
+	public static final String[] names = new String[] {
+		"Alice", "Barbara", "Chris", "David", "Eric", "Fred", "George",
+		"Howard", "Irene", "Jane", "Kelly", "Laura", "Ira"
+	};
+
+	private String getRandomName() {
+		return names[RandomUtils.nextInt(names.length)];
+	}
+	
+	public static final String[] lastnames = new String[] {
+		"Bach", "Chopin", "Newton", "Verne", "Brahms", "Gershwin", "Rogers", 
+		"Paxton", "Bok"
+	};
+	
+	public static final String[] companies = new String[] {
+		"ibm.com", "mitre.org", "comcast.net", "verizon.com"
+	};
+	
+	private void createUser() throws PasswordException, UserException {
+		String username = getRandomName() + Integer.toString(RandomUtils.nextInt(100));
+		String firstname = getRandomName();
+		String lastname = lastnames[RandomUtils.nextInt(lastnames.length)];
+		String email = username + "@" + companies[RandomUtils.nextInt(companies.length)];
+		String password = "aAbBcCdD1234@!$%";
+		
+		usermanager.add(username, password);
+		User u = usermanager.get(username);
+		u.setEmail(email);
+		usermanager.save(u);
+	
+		usermanager.saveAttribute(new UserAttribute(UserManager.StandardAttributes.FIRST_NAME, firstname, u));
+		usermanager.saveAttribute(new UserAttribute(UserManager.StandardAttributes.LAST_NAME, lastname, u));
+	}
 }
+
