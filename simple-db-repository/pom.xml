@@ -2,38 +2,22 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.mitre</groupId>
-	<artifactId>openid-connect-db-repository</artifactId>
-	<packaging>pom</packaging>
+	<artifactId>simple-db-repository</artifactId>
+	<packaging>war</packaging>
 	<version>0.1</version>
-	<name>openid-connect-db-repository</name>
-	<modules>
-	    <module>OpenID-Connect-Java-Spring-Server</module>
-	    <module>simple-db-repository</module>
-	</modules>	
+	<name>simple-db-repository</name>
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-eclipse-plugin</artifactId>
-				<configuration>
-					<sourceIncludes/>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>2.1.1</version>
+				<version>2.2</version>
 				<configuration>
-					<overlays>
-						<overlay>
-							<groupId>org.mitre</groupId>
-							<artifactId>openid-connect-user-repository-server</artifactId>
-						</overlay>
-					</overlays>
+					
 				</configuration>
 			</plugin>
 		</plugins>
-	</build>
+	</build>	
 	<properties>
 		<java-version>1.6</java-version>
 		<org.springframework-version>3.1.1.RELEASE</org.springframework-version>
@@ -41,6 +25,16 @@
 		<spring.security.version>3.1.0.RELEASE</spring.security.version>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>org.mitre</groupId>
+			<artifactId>openid-connect-server</artifactId>
+			<version>0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mitre</groupId>
+			<artifactId>openid-connect-common</artifactId>
+			<version>0.1</version>
+		</dependency>
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -56,7 +50,7 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
 			<version>${org.springframework-version}</version>
-		</dependency>
+		</dependency>		
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-orm</artifactId>
@@ -104,14 +98,15 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4.4</version>
+		</dependency>
+		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.15</version>
 			<exclusions>
-				<exclusion>
-					<groupId>javax.mail</groupId>
-					<artifactId>mail</artifactId>
-				</exclusion>
 				<exclusion>
 					<groupId>javax.jms</groupId>
 					<artifactId>jms</artifactId>
@@ -127,6 +122,11 @@
 			</exclusions>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+	      <groupId>org.aspectj</groupId>
+	      <artifactId>aspectjweaver</artifactId>
+	      <version>1.6.9</version>
+	    </dependency>		
 
 		<!-- @Inject -->
 		<dependency>
@@ -314,5 +314,7 @@
 			</snapshots>
 		</repository>
 	</repositories>
+
+
 
 </project>
