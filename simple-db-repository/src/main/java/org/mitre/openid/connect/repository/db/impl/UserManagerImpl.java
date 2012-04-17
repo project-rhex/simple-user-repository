@@ -119,8 +119,7 @@ public class UserManagerImpl implements UserManager {
 		@SuppressWarnings("unchecked")
 		Role admin = findRole("ADMIN");
 		// Find admin users only
-		TypedQuery<User> uq = (TypedQuery<User>) 
-				em.createQuery("select u from User u inner join u.roles r where r.name = 'ADMIN'");
+		TypedQuery<User> uq = (TypedQuery<User>) em.createNamedQuery("users.by_admin_role"); 
 		List<User> users = uq.getResultList();
 		if (users.size() == 0) {
 			if (StringUtils.isBlank(defaultAdminUserName)) {
@@ -157,8 +156,7 @@ public class UserManagerImpl implements UserManager {
 					"username should never be null or empty");
 		}
 		@SuppressWarnings("unchecked")
-		TypedQuery<User> uq = (TypedQuery<User>) em.createQuery(
-				"select u from User u where u.username = :username");
+		TypedQuery<User> uq = (TypedQuery<User>) em.createNamedQuery("users.by_username");
 		List<User> results = uq.setParameter("username", username).getResultList();
 		return results.size() > 0 ? results.get(0) : null;
 	}
@@ -223,8 +221,7 @@ public class UserManagerImpl implements UserManager {
 					"likePattern should never be null or empty");
 		}
 		@SuppressWarnings("unchecked")
-		TypedQuery<User> uq = (TypedQuery<User>) em.createQuery(
-				"select u from User u where lower(u.username) like :pattern");
+		TypedQuery<User> uq = (TypedQuery<User>) em.createNamedQuery("users.like_name");
 		List<User> results = uq.setParameter("pattern", likePattern.toLowerCase()).getResultList();
 		return results;
 	}
@@ -242,10 +239,7 @@ public class UserManagerImpl implements UserManager {
 					.setMaxResults(count)
 					.getResultList();
 		} else {
-			TypedQuery<User> uq = (TypedQuery<User>) em.createQuery(
-					"select u from User u, UserAttribute ua " +
-					"where u.id = ua.user_id and " +
-					"ua.name = :attr order by ua.value");
+			TypedQuery<User> uq = (TypedQuery<User>) em.createNamedQuery("users.by_user_attribute_name");
 			users = uq.setParameter("attr", sortBy.name())
 					.setFirstResult(first)
 					.setMaxResults(count)
@@ -254,7 +248,7 @@ public class UserManagerImpl implements UserManager {
 		List<Map<String,String>> rval = new ArrayList<Map<String,String>>();
 		for(User u : users) {
 			Map<String, String> data = new HashMap<String, String>();
-			Query q = em.createNamedQuery("user_attributes_find_by_user_id");
+			Query q = em.createNamedQuery("user_attributes.by_user_id");
 			List<UserAttribute> attrs = q.setParameter("id", u.getId()).getResultList();
 			for(UserAttribute attr : attrs) {
 				if (attr.getType() != UserAttribute.NORMAL_TYPE) continue;
@@ -268,10 +262,6 @@ public class UserManagerImpl implements UserManager {
 		return rval;
 	}
 
-
-
-	private final static String ROLE_Q_BY_NAME = "select r from Role r where r.name = :name";
-	
 	/* (non-Javadoc)
 	 * @see org.mitre.itflogin.UserManager#find(java.lang.String)
 	 */
@@ -281,7 +271,7 @@ public class UserManagerImpl implements UserManager {
 					"rolename should never be null or empty");
 		}
 		@SuppressWarnings("unchecked")
-		TypedQuery<Role> rq = (TypedQuery<Role>) em.createQuery(ROLE_Q_BY_NAME);
+		TypedQuery<Role> rq = (TypedQuery<Role>) em.createNamedQuery("roles.by_name");
 		List<Role> found = rq.setParameter("name", rolename).getResultList();
 		if (found.size() == 0) {
 			Role role = new Role();
@@ -698,8 +688,7 @@ public class UserManagerImpl implements UserManager {
 	 * @see org.mitre.openid.connect.repository.UserInfoRepository#getAll()
 	 */
 	public Collection<UserInfo> getAll() {
-		TypedQuery<User> uq = (TypedQuery<User>) em.createQuery(
-				"select u from User u");
+		TypedQuery<User> uq = (TypedQuery<User>) em.createNamedQuery("users.all");
 		List<User> users = uq.getResultList();
 		List<UserInfo> userInfos = new ArrayList<UserInfo>();
 		for(User u : users) {

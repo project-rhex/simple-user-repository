@@ -25,23 +25,40 @@
 		</property>
 	</bean>
 	
+    <bean id="dataSource" class="org.mitre.jdbc.datasource.H2DataSourceFactory">
+       <property name="databaseName" value="connect"/>
+       <property name="persist" value="false" />
+       <property name="scriptLocations" >
+           <list>
+               <value>file:db/schema.ddl</value>
+           </list>
+       </property>
+    </bean>	
+    
+    <bean id="jpaAdapter" class="org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter">
+		<property name="databasePlatform" value="org.eclipse.persistence.platform.database.MySQLPlatform" />
+		<property name="showSql" value="true" />
+	</bean>
+	
     <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
     	<property name="entityManagerFactory" ref="entityManagerFactory" />
     </bean>
           
-    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalEntityManagerFactoryBean">
-        <property name="persistenceUnitName" value="user_datastore" />
-        <!--  <property name="persistenceXmlLocation" 
-        	value="classpath:/org/mitre/openid/connect/repository/db/persistence.xml" />  -->
-        <property name="jpaProperties">
-         	<props>
-         		<prop key="javax.persistence.jdbc.driver">${jdbc.driverClass}</prop>
-         		<prop key="javax.persistence.jdbc.url">${jdbc.url}</prop>
-         		<prop key="javax.persistence.jdbc.user">${jdbc.username}</prop>
-         		<prop key="javax.persistence.jdbc.password">${jdbc.password}</prop>
-         	</props>
-        </property>
-    </bean>
+	<bean id="entityManagerFactory"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="persistenceUnitName" value="user_datastore" />
+		<property name="persistenceXmlLocation" 
+        	value="classpath:/org/mitre/openid/connect/repository/db/model/persistence.xml" />
+		<property name="dataSource" ref="dataSource" />
+        <property name="jpaVendorAdapter" ref="jpaAdapter" />
+		<property name="jpaPropertyMap">
+			<map>
+				<entry key="eclipselink.weaving" value="false" />
+				<entry key="eclipselink.logging.level" value="FINEST" />
+				<entry key="eclipselink.logging.level.sql" value="FINEST" />
+			</map>
+		</property>
+	</bean>
 	
 	<bean id="usermanager" class="org.mitre.openid.connect.repository.db.impl.UserManagerImpl">
 		<property name="attemptLimit" value="3" />

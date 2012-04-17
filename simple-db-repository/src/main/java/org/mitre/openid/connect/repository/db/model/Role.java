@@ -24,12 +24,15 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 
 @Entity
 @Table(name = "ROLES")
+@NamedQuery(name = "roles.by_name",
+	query = "select r from Role r where r.name = :name")
 public class Role {
 	private Long id;
 	private String name;

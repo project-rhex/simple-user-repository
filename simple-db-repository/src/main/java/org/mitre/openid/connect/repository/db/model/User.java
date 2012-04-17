@@ -33,6 +33,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -52,6 +54,18 @@ import org.eclipse.persistence.indirection.ValueHolderInterface;
  */
 @Entity
 @Table(name = "USERS")
+@NamedQueries(value = {
+		@NamedQuery(name = "users.by_user_attribute_name", 
+			query = "select u from User u, UserAttribute ua where u.id = ua.userId and ua.name = :attr order by ua.value"),
+		@NamedQuery(name = "users.by_username",
+			query = "select u from User u where u.username = :username"),
+		@NamedQuery(name = "users.by_admin_role",
+			query = "select u from User u inner join u.roles r where r.name = 'ADMIN'"),
+		@NamedQuery(name = "users.like_name",
+			query = "select u from User u where lower(u.username) like :pattern"),
+		@NamedQuery(name = "users.all",
+			query = "select u from User u")
+})
 public class User {
 	private Long id;
 	private String username;

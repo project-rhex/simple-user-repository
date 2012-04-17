@@ -39,7 +39,7 @@ import org.mitre.openid.connect.repository.db.UserManager;
 @Entity
 @Table(name = "USER_ATTRIBUTES")
 @NamedQuery(query="select ua from UserAttribute ua where ua.userId = :id", 
-			name = "user_attributes_find_by_user_id")
+			name = "user_attributes.by_user_id")
 public class UserAttribute {
 	/**
 	 * Regular attribute value attribute
