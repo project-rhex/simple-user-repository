@@ -2,10 +2,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.mitre</groupId>
-	<artifactId>openid-connect-db-repository</artifactId>
+	<artifactId>simple-user-repository</artifactId>
 	<packaging>pom</packaging>
 	<version>0.1</version>
-	<name>openid-connect-db-repository</name>
+	<name>simple-user-repository</name>
 	<modules>
 		<module>OpenID-Connect-Java-Spring-Server</module>
 		<module>simple-db-repository</module>

@@ -6,6 +6,8 @@ A simple web application that allows the management of user information in our O
 Build & Implementation Notes
 ============================
 
+* Do not build with Java 7, it will not work properly
+
 * You will need to link in OpenID-Connect-Java-Spring-Server manually if you are not a committer using the https:// read 
 only link rather than using the automatic git submodule handling. See github for the latest link. You can still use the
 automatic git submodule update --init behavior inside of OpenID-Connect.. to initialize the spring module inside of the 

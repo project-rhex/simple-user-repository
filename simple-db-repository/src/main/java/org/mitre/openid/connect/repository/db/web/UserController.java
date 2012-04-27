@@ -40,6 +40,11 @@ public class UserController {
 		
 		return null;
 	}
+	
+	@RequestMapping(value="/index", method=RequestMethod.GET, produces="text/html")
+	public String index(Model model) {
+		return null;
+	}
 
 	/**
 	 * @return the um
