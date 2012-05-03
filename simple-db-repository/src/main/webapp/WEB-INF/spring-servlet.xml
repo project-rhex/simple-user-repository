@@ -16,13 +16,18 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
 
 	<!-- Scan for components -->
-	<context:component-scan annotation-config="true" base-package="org.mitre"/>
+	<context:component-scan annotation-config="true" base-package="org.mitre">
+		<!-- Exclude the other repositories (at least for now) -->
+		<context:exclude-filter type="regex" expression=".*\.UserManagerImpl"/>
+		<context:exclude-filter type="regex" expression=".*\.JpaUserInfoRepository"/>
+		<context:exclude-filter type="regex" expression=".*\.UserInfoServiceImpl"/>
+	</context:component-scan>
 	
 	<!-- Enables the Spring MVC @Controller programming model -->
 	<tx:annotation-driven transaction-manager="transactionManager" />
 	<mvc:annotation-driven />
 	<mvc:default-servlet-handler />
-
+	
 	<!-- Bean to hold configuration propreties -->
 	<bean id="configBean" class="org.mitre.openid.connect.config.ConfigurationPropertiesBean">
 		<property name="issuer" value="http://localhost/" />
@@ -208,7 +213,7 @@
 	</bean>
 
 	<bean class="org.mitre.openid.connect.service.impl.UserInfoServiceImpl">
-		<constructor-arg><ref bean="userManager"/></constructor-arg>
+		<property name="userInfoRepository" ref="userManager" />
 	</bean>
 	
 	<bean id="sender" class="org.springframework.mail.javamail.JavaMailSenderImpl">

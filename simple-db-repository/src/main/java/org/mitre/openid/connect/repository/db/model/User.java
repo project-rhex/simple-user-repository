@@ -64,7 +64,9 @@ import org.eclipse.persistence.indirection.ValueHolderInterface;
 		@NamedQuery(name = "users.like_name",
 			query = "select u from User u where lower(u.username) like :pattern"),
 		@NamedQuery(name = "users.all",
-			query = "select u from User u")
+			query = "select u from User u"),
+		@NamedQuery(name = "users.count",
+			query = "select count(u) from User u")
 })
 public class User {
 	private Long id;

@@ -70,6 +70,14 @@ public class TestUserImpl {
 		usermanager.testAndInitialize();
 	}
 	
+	@Test public void testCount() throws Exception {
+		usermanager.add("jacob", "Fido1234$");
+		usermanager.add("jennifer", "Fido1234$");
+		usermanager.add("rachel", "Fido1234$");
+		usermanager.add("samuel", "Fido1234$");
+		assertEquals(5, usermanager.count()); // Remember the built in admin user
+	}
+	
 	@Test public void testSalting() throws Exception {
 		String val1 = usermanager.salt(0x10020110, "Fido1234$");
 		String val2 = usermanager.salt(0x1A345510, "Fido1234$");
@@ -322,6 +330,7 @@ public class TestUserImpl {
 			Map<String, String> r1 = results.get(i + 1);
 			String v0 = r0.get(lookup);
 			String v1 = r1.get(lookup);
+			if (v0 == null || v1 == null) continue; // Some users are inserted without emails now
 			assertTrue(! (v0.compareTo(v1) > 0));
 		}
 	}

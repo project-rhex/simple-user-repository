@@ -18,12 +18,24 @@
  ***************************************************************************************/
 package org.mitre.openid.connect.repository.db.web;
 
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.lang.StringUtils;
 import org.mitre.openid.connect.repository.db.UserManager;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mitre.openid.connect.repository.db.UserManager.SortBy;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 
 /**
  * Handle user requests
@@ -31,32 +43,77 @@ import org.springframework.web.bind.annotation.RequestMethod;
  *
  */
 @Controller
+@RequestMapping("/users")
 public class UserController {
-	@Autowired
-	private UserManager um;
-	
-	@RequestMapping(value="/users", method=RequestMethod.GET, produces="application/json")
-	public String findRange(Model model) {
+	static class Results {
+		int page;
+		int count;
+		int total;
+		List<Map<String,String>> results;
+	}
 		
-		return null;
+	@Resource
+	private UserManager userManager;
+	private int count = 20;
+	
+	@RequestMapping("/index")
+	public @ResponseBody String findRange(@RequestParam("page") Integer page_number, @RequestParam("sort_on") String sortOn) {
+		int page = page_number != null ? page_number : 0;
+		int first = page * count;
+		SortBy sortBy = SortBy.valueOf(StringUtils.isNotBlank(sortOn) ? sortOn : "FIRST_NAME");
+		
+		List<Map<String, String>> values = userManager.findInRange(first, count, sortBy);
+		
+		Gson gson = new Gson();
+		Results h = new Results();
+		h.page = page;
+		h.count = count;
+		h.total = userManager.count();
+		h.results = values;
+		return gson.toJson(h);
 	}
 	
-	@RequestMapping(value="/index", method=RequestMethod.GET, produces="text/html")
-	public String index(Model model) {
-		return null;
+	@RequestMapping("/paginator")
+	public @ResponseBody String paginator(@RequestParam("page") Integer page_number, @RequestParam("sort_on") String sortOn) {
+		StringBuilder sb = new StringBuilder(160);
+		int page = page_number != null ? page_number : 0;
+		int total = userManager.count();
+		int page_count = total / count;
+		if (total % count != 0) {
+			page_count++; // Need an extra page if there are remainders
+		}
+		page_count = Math.max(1, page_count);
+		sb.append("<span class='paginator'>");
+		for(int p = 0; p < page_count; p++) {
+			if (p == page) {
+				sb.append("<span class='page'>" + p + "</span>");
+			} else {
+				sb.append("<span class='page_link'><a href='/users/index?page=" + p + "&sort_on=" + sortOn + "'>" + p + "</span>");
+			}
+		}
+		sb.append("</span>");
+		return sb.toString();
 	}
-
+	
 	/**
 	 * @return the um
 	 */
 	public UserManager getUm() {
-		return um;
+		return userManager;
 	}
 
 	/**
 	 * @param um the um to set
 	 */
 	public void setUm(UserManager um) {
-		this.um = um;
+		this.userManager = um;
+	}
+
+	public int getCount() {
+		return count;
+	}
+
+	public void setCount(int count) {
+		this.count = count;
 	}
 }

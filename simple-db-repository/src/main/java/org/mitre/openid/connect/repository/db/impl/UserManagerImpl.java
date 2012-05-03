@@ -146,6 +146,16 @@ public class UserManagerImpl implements UserManager {
 			userValidity = new SimpleUserValidity();
 		}
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.mitre.openid.connect.repository.db.UserManager#count()
+	 */
+	public int count() {
+		TypedQuery<Number> uq = (TypedQuery<Number>) em.createNamedQuery("users.count");
+		List<Number> results = uq.getResultList();
+		return results.size() > 0 ? results.get(0).intValue() : 0;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.mitre.itflogin.impl.UserManager#get(java.lang.String)

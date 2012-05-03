@@ -58,6 +58,11 @@ public interface UserManager extends UserInfoRepository {
 	void testAndInitialize();
 	
 	/**
+	 * @return get the total count of users in the database
+	 */
+	int count();
+	
+	/**
 	 * Lookup user by name
 	 * 
 	 * @param username
