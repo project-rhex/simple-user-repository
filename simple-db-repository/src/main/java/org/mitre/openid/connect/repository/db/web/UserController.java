@@ -18,14 +18,17 @@
  ***************************************************************************************/
 package org.mitre.openid.connect.repository.db.web;
 
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.mitre.openid.connect.repository.db.UserManager;
 import org.mitre.openid.connect.repository.db.UserManager.SortBy;
+import org.mitre.openid.connect.repository.db.util.ParseRequestContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -74,7 +77,13 @@ public class UserController {
 	}
 	
 	@RequestMapping("/paginator")
-	public @ResponseBody String paginator(@RequestParam("page") Integer page_number, @RequestParam("sort_on") String sortOn) {
+	public @ResponseBody String paginator(@RequestParam("page") Integer page_number, @RequestParam("sort_on") String sortOn, HttpServletRequest request) {
+		String base = "";
+		try {
+			base = ParseRequestContext.parseContext(request.getRequestURL().toString());
+		} catch (MalformedURLException e) {
+			//
+		}
 		StringBuilder sb = new StringBuilder(160);
 		int page = page_number != null ? page_number : 0;
 		int total = userManager.count();
@@ -85,14 +94,36 @@ public class UserController {
 		page_count = Math.max(1, page_count);
 		sb.append("<span class='paginator'>");
 		for(int p = 0; p < page_count; p++) {
-			if (p == page) {
-				sb.append("<span class='page'>" + p + "</span>");
+			String label;
+			if (p == 0) {
+				label = "First";
+			} else if ((page_count - p) == 1) {
+				label = "Last";
 			} else {
-				sb.append("<span class='page_link'><a href='/users/index?page=" + p + "&sort_on=" + sortOn + "'>" + p + "</span>");
+				label = Integer.toString(p);
+			}
+			if (p == page) {
+				sb.append("<span class='page'>" + label + "</span>");
+			} else {
+				sb.append("<span class='page_link'><a href='");
+				sb.append(base);
+				sb.append("/users/manageUsers?page=" + p + "&sort_on=" + sortOn + "'>" + label + "</span>");
 			}
 		}
 		sb.append("</span>");
 		return sb.toString();
+	}
+	
+	@RequestMapping("/manageUsers")
+	public ModelAndView manageUsers(@RequestParam(value="page", defaultValue="0") Integer page, 
+			@RequestParam(value="sort_on", defaultValue="FIRST_NAME") String sortOn) {
+		int first = page * count;
+		SortBy sortBy = SortBy.valueOf(sortOn);
+		
+		ModelAndView mav = new ModelAndView("users/manageUsers");
+		if (page != null) mav.addObject("page", page);
+		if (StringUtils.isNotBlank(sortOn)) mav.addObject("sortOn", SortBy.valueOf(sortOn));
+		return mav;
 	}
 	
 	/**
