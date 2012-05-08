@@ -34,12 +34,12 @@ $(document).ready(function() {
 </script>
 
 <o:header current_user="" current_role="" breadcrumbs="${bc}" />
-<h1>Manage Users</h1>
-<a href="/users/add">Add User</a>
+<h1 class="span12">Manage Users</h1>
+<a class="span12" href="/users/add">Add User</a>
 <div id="users">
-<table id="people">
+<table id="people" class="table-striped span12">
 </table>
-<div id="paginator"></div>
+<div id="paginator" class="span12"></div>
 </div>
 </body>
 </html>

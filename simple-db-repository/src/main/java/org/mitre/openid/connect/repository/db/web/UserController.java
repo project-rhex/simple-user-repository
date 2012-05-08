@@ -107,7 +107,7 @@ public class UserController {
 			} else {
 				sb.append("<span class='page_link'><a href='");
 				sb.append(base);
-				sb.append("/users/manageUsers?page=" + p + "&sort_on=" + sortOn + "'>" + label + "</span>");
+				sb.append("/users/manageUsers?page=" + p + "&sort_on=" + sortOn + "'>" + label + "</a></span>");
 			}
 		}
 		sb.append("</span>");
