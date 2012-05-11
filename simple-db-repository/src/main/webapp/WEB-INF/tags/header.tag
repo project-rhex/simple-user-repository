@@ -4,7 +4,7 @@
 <%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <div class="header">
 	<span class="user">${current_user}(${current_role})</span>
-	<img alt="logo" src="/images/logo.gif">
+	<img alt="logo" src="${base}/resources/images/logo.png">
 </div>
 <div class="breadcrumbs span12">
 	<c:forEach var="crumb" items="${breadcrumbs}" varStatus="row">

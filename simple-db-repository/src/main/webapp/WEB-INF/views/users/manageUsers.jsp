@@ -41,5 +41,7 @@ $(document).ready(function() {
 </table>
 <div id="paginator" class="span12"></div>
 </div>
+<input id="page" type="hidden" name="page" value="${page}">
+<input id="sort_on" type="hidden" name="sort_on" value="${sort_on}">
 </body>
 </html>
