@@ -16,7 +16,7 @@
 		request.setAttribute("sort_on", "FIRST_NAME");
 	}
 	List<Breadcrumb> bc = new java.util.ArrayList<Breadcrumb>();
-	bc.add(new Breadcrumb("Home", "/"));
+	bc.add(new Breadcrumb("Home", "${base}/"));
 	bc.add(new Breadcrumb("Manage Users"));
 	request.setAttribute("bc", bc);
 %>   
@@ -34,8 +34,8 @@ $(document).ready(function() {
 </script>
 
 <o:header current_user="" current_role="" breadcrumbs="${bc}" />
-<h1 class="span12">Manage Users</h1>
-<a class="span12" href="/users/add">Add User</a>
+<h2 class="span12">Manage Users</h2>
+<a class="span12" href="${base}/users/addUser">Add User</a>
 <div id="users">
 <table id="people" class="table-striped span12">
 </table>

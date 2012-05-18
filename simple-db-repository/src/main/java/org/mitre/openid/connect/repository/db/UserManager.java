@@ -70,6 +70,14 @@ public interface UserManager extends UserInfoRepository {
 	 * @return return user description or <code>null</code> if not found
 	 */
 	User get(String username);
+	
+	/**
+	 * Lookup user by id
+	 * 
+	 * @param id user id
+	 * @return return user or <code>null</code> if not found
+	 */
+	User findById(Long id);
 
 	/**
 	 * Save user

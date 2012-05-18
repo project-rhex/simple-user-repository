@@ -37,7 +37,7 @@ users = {
 				var ipath = users.base_path + '/resources/images/downarrow.png';
 				$(th).append("<img height='15' width='15' src='" + ipath + "'>");
 			} else {
-				var sort_path = window.location.origin + users.base_path + "/users/manageUsers?page=" + page + "&sort_on=" + sort_val;
+				var sort_path = users.base_path + "/users/manageUsers?page=" + page + "&sort_on=" + sort_val;
 				$(th).click(function() {
 					window.location = sort_path;
 				});

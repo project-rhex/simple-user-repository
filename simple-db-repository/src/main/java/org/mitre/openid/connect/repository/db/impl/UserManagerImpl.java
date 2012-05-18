@@ -157,6 +157,16 @@ public class UserManagerImpl implements UserManager {
 		return results.size() > 0 ? results.get(0).intValue() : 0;
 	}
 
+	
+	
+	@Override
+	public User findById(Long id) {
+		if (id == null) {
+			throw new IllegalArgumentException("id should never by null");
+		}
+		return em.find(User.class, id);
+	}
+
 	/* (non-Javadoc)
 	 * @see org.mitre.itflogin.impl.UserManager#get(java.lang.String)
 	 */
