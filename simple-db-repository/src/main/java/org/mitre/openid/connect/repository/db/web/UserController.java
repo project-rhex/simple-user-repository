@@ -18,6 +18,8 @@
  ***************************************************************************************/
 package org.mitre.openid.connect.repository.db.web;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -148,11 +150,11 @@ public class UserController {
 		ModelAndView mav = new ModelAndView("users/addOrEditUser");
 		if (userid == null) {
 			mav.addObject("label", "Add");
-			mav.addObject("user", "");
+			mav.addObject("userid", "-1");
 		} else {
 			User user = userManager.findById(userid);
 			mav.addObject("label", "Edit");
-			mav.addObject("user", userid.toString());
+			mav.addObject("userid", userid.toString());
 		}
 		return mav;
 	}
@@ -165,101 +167,22 @@ public class UserController {
 	}
 	
 	@RequestMapping(value = "/user/{id}", method = {RequestMethod.POST, RequestMethod.PUT}) 
-	public String postUserData(@PathVariable Long id) {
-		User user = userManager.findById(id);
-		if (user == null) {
-			user = new User();
+	public String postUserData(@PathVariable Long id, HttpServletRequest request) {
+		Gson gson = new Gson();
+		User postedUser = null;
+		try {
+			Reader r = request.getReader();
+			postedUser = gson.fromJson(r, User.class);
+		} catch (IOException e) {
+			throw new RuntimeException("Couldn't read serialized user object");
 		}
-		return "";
-	}
-	
-	@RequestMapping(value = "/editUser", method = RequestMethod.POST)
-	public ModelAndView editUserFormSubmit(HttpServletRequest request) {
 		
-		String uidstr = request.getParameter(USER_ID);
-		User userobj;
-		if (StringUtils.isNotBlank(uidstr)) {
-			Long uid = new Long(uidstr);
-			userobj = userManager.findById(uid);
-		} else {
-			userobj = new User();
-		}
-		Map<String,UserAttribute> amap = new HashMap<String, UserAttribute>();
-		for(UserAttribute at : userobj.getAttributes()) {
-			amap.put(at.getName(), at);
-		}
-		Map<String,String> pmap = request.getParameterMap();
-		for(String pname : pmap.keySet()) {
-			if (pname.endsWith("_field")) {
-				String value = pmap.get(pname);
-				String field = pname.substring(0, pname.length() - 6).toUpperCase();
-				if ("EMAIL".equals(field)) {
-					userobj.setEmail(value);
-				} else if (field.startsWith("PASSWORD")) {
-					if ("PASSWORD".equals(field)) {
-						String pw2 = pmap.get("password_repeat_field");
-						
-					}
-				} else {
-					UserAttribute attr = amap.get(field);
-					if (attr == null) {
-						attr = new UserAttribute(field, value);
-						userobj.getAttributes().add(attr);
-					} else {
-						attr.setValue(value);
-					}
-				}
-			}
-		}
-		userManager.save(userobj);
+		if (request.getMethod() == "PUT") 
+			postedUser.setId(id);
 		
-		return new ModelAndView("users/manageUsers");
-	}
-	
-	
-	/**
-	 * Merge info from the map into an existing or blank user object
-	 * 
-	 * @param user
-	 * @param input
-	 * @return
-	 */
-	private User mergeMapToUser(Map<String, String> fields, User input) {
-		Map<String,UserAttribute> user_attrs = new HashMap<String, UserAttribute>();
-		for(UserAttribute attr : input.getAttributes()) {
-			user_attrs.put(attr.getName().toLowerCase(), attr);
-		}
-		for(String key : fields.keySet()) {
-			String value = fields.get(key);
-			if ("email".equals(key)) {
-				input.setEmail(value);
-			} else {
-				UserAttribute attr = user_attrs.get(key);
-				attr.setValue(fields.get(key));
-			}
-		}
-		return input;
-	}
-
-
-	
-	private Map<String,String> getMapFromUser(User user) {
-		Map<String, String> rval = new HashMap<String, String>();
-		if (user.getId() != null) {
-			rval.put(USER_ID, user.getId().toString());
-		}
-		rval.put("email", user.getEmail());
-		for(UserAttribute attr : user.getAttributes()) {
-			rval.put(attr.getName().toLowerCase(), attr.getValue());
-		}
-		if (StringUtils.isBlank(rval.get("title"))) {
-			rval.put("title", "");
-		}
-		if (StringUtils.isBlank(rval.get("email"))) {
-			rval.put("email", "");
-		}
-		return rval;
-	}
+		userManager.save(postedUser);
+		return "{ success: true }";
+	}	
 	
 	/**
 	 * @return the um

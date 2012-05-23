@@ -41,6 +41,7 @@ import javax.persistence.TypedQuery;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.mitre.openid.connect.model.Address;
+import org.mitre.openid.connect.model.DefaultUserInfo;
 import org.mitre.openid.connect.model.UserInfo;
 import org.mitre.openid.connect.repository.db.IPasswordRule;
 import org.mitre.openid.connect.repository.db.IUserValidity;
@@ -537,7 +538,7 @@ public class UserManagerImpl implements UserManager {
 	/* (non-Javadoc)
 	 * @see org.mitre.openid.connect.repository.UserInfoRepository#getByUserId(java.lang.String)
 	 */
-	public UserInfo getByUserId(String userId) {
+	public DefaultUserInfo getByUserId(String userId) {
 		if (userId == null || userId.trim().length() == 0) {
 			throw new IllegalArgumentException(
 					"userId should never be null or empty");
@@ -556,10 +557,10 @@ public class UserManagerImpl implements UserManager {
 	 * @param user
 	 * @return
 	 */
-	private UserInfo userToUserInfo(User user) {
+	private DefaultUserInfo userToUserInfo(User user) {
 		Collection<UserAttribute> attrs = user.getAttributes();
 		Map<String, String> amap = attributesToMap(attrs);
-		UserInfo info = new UserInfo();
+		DefaultUserInfo info = new DefaultUserInfo();
 		info.setEmail(user.getEmail());
 		info.setFamilyName(amap.get(StandardAttributes.LAST_NAME.name()));
 		info.setGender(amap.get(StandardAttributes.GENDER.name()));
@@ -616,7 +617,7 @@ public class UserManagerImpl implements UserManager {
 	/* (non-Javadoc)
 	 * @see org.mitre.openid.connect.repository.UserInfoRepository#save(org.mitre.openid.connect.model.UserInfo)
 	 */
-	public UserInfo save(UserInfo userInfo) {
+	public UserInfo save(DefaultUserInfo userInfo) {
 		if (userInfo == null) {
 			throw new IllegalArgumentException(
 					"userInfo should never be null");

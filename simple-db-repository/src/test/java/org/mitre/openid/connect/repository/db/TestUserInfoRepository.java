@@ -32,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mitre.openid.connect.model.Address;
+import org.mitre.openid.connect.model.DefaultUserInfo;
 import org.mitre.openid.connect.model.UserInfo;
 import org.mitre.openid.connect.repository.db.model.User;
 import org.springframework.test.context.ContextConfiguration;
@@ -61,7 +62,7 @@ public class TestUserInfoRepository {
 	
 	@Test
 	public void testSaveAndGetByUserId() throws Exception {
-		UserInfo userInfo = new UserInfo();
+		UserInfo userInfo = new DefaultUserInfo();
 		Address addr = new Address();
 		addr.setLocality("Chelmsford");
 		addr.setRegion("Massachusetts");
@@ -85,7 +86,7 @@ public class TestUserInfoRepository {
 		userInfo.setProfile("http://www.facebook.com/mesmith");
 		userInfo.setWebsite("http://www.linkedin.com/mesmith");
 		userInfo.setZoneinfo("zone1");
-		usermanager.save(userInfo );
+		usermanager.save((DefaultUserInfo) userInfo );
 		
 		// Retrieve and check
 		UserInfo ui = usermanager.getByUserId("msmith");
@@ -115,14 +116,14 @@ public class TestUserInfoRepository {
 	
 	@Test
 	public void testGetAll() throws Exception {
-		Collection<UserInfo> results = usermanager.getAll();
+		Collection<? extends UserInfo> results = usermanager.getAll();
 		assertNotNull(results);
 		assertTrue(results.size() > 1);
 	}
 	
 	@Test
 	public void testRemove() throws Exception {
-		UserInfo userInfo = new UserInfo();
+		UserInfo userInfo = new DefaultUserInfo();
 		Address addr = new Address();
 		addr.setLocality("Chelmsford");
 		addr.setRegion("Massachusetts");
@@ -133,7 +134,7 @@ public class TestUserInfoRepository {
 		userInfo.setAddress(addr);
 		userInfo.setEmail("jdoe@aol.com");
 
-		usermanager.save(userInfo);
+		usermanager.save((DefaultUserInfo) userInfo);
 		
 		UserInfo jdoe = usermanager.getByUserId("jdoe");
 		assertNotNull(jdoe);
@@ -145,7 +146,7 @@ public class TestUserInfoRepository {
 	
 	@Test
 	public void testRemoveById() throws Exception {
-		UserInfo userInfo = new UserInfo();
+		UserInfo userInfo = new DefaultUserInfo();
 		Address addr = new Address();
 		addr.setLocality("Chelmsford");
 		addr.setRegion("Massachusetts");
@@ -156,7 +157,7 @@ public class TestUserInfoRepository {
 		userInfo.setAddress(addr);
 		userInfo.setEmail("jdoe@aol.com");
 
-		usermanager.save(userInfo);
+		usermanager.save((DefaultUserInfo) userInfo);
 		
 		UserInfo jdoe = usermanager.getByUserId("jdoe");
 		assertNotNull(jdoe);
