@@ -3,6 +3,7 @@
 <%@ taglib prefix="o" tagdir="/WEB-INF/tags" %> 
 
 <%
+	String base = (String) request.getAttribute("base"); // Calculated in o:head
 	String p = request.getParameter("page");
 	if (p != null && p.trim().length() > 0) {
 		request.setAttribute("page", new Integer(p));
@@ -16,7 +17,7 @@
 		request.setAttribute("sort_on", "FIRST_NAME");
 	}
 	List<Breadcrumb> bc = new java.util.ArrayList<Breadcrumb>();
-	bc.add(new Breadcrumb("Home", "${base}/"));
+	bc.add(new Breadcrumb("Home", base + "/"));
 	bc.add(new Breadcrumb("Manage Users"));
 	request.setAttribute("bc", bc);
 %>   

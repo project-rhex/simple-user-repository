@@ -20,9 +20,11 @@ package org.mitre.openid.connect.repository.db.web;
 
 import java.net.MalformedURLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
@@ -35,6 +37,7 @@ import org.mitre.openid.connect.repository.db.util.ParseRequestContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,8 +45,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 /**
  * Handle user requests
@@ -146,19 +151,32 @@ public class UserController {
 			mav.addObject("user", "");
 		} else {
 			User user = userManager.findById(userid);
-			Map<String,String> umap = getMapFromUser(user);
 			mav.addObject("label", "Edit");
 			mav.addObject("user", userid.toString());
 		}
 		return mav;
 	}
 	
+	@RequestMapping(value = "/user/{id}", method = RequestMethod.GET)
+	public String getUserData(@PathVariable Long id) {
+		User user = userManager.findById(id);
+		Gson gson = new Gson();
+		return gson.toJson(user);
+	}
 	
+	@RequestMapping(value = "/user/{id}", method = {RequestMethod.POST, RequestMethod.PUT}) 
+	public String postUserData(@PathVariable Long id) {
+		User user = userManager.findById(id);
+		if (user == null) {
+			user = new User();
+		}
+		return "";
+	}
 	
 	@RequestMapping(value = "/editUser", method = RequestMethod.POST)
 	public ModelAndView editUserFormSubmit(HttpServletRequest request) {
 		
-		String uidstr = user.get(USER_ID);
+		String uidstr = request.getParameter(USER_ID);
 		User userobj;
 		if (StringUtils.isNotBlank(uidstr)) {
 			Long uid = new Long(uidstr);
@@ -166,16 +184,36 @@ public class UserController {
 		} else {
 			userobj = new User();
 		}
-		userobj = mergeMapToUser(user, userobj);
-		if (result.hasErrors()) {
-			ModelAndView editview = new ModelAndView("users/addOrEditUser");
-			Map<String,String> umap = getMapFromUser(userobj);
-			editview.addObject("label", "Edit");
-			editview.addObject("user", umap);
-			return editview;
-		} else {
-			return new ModelAndView("users/managerUsers");	
+		Map<String,UserAttribute> amap = new HashMap<String, UserAttribute>();
+		for(UserAttribute at : userobj.getAttributes()) {
+			amap.put(at.getName(), at);
 		}
+		Map<String,String> pmap = request.getParameterMap();
+		for(String pname : pmap.keySet()) {
+			if (pname.endsWith("_field")) {
+				String value = pmap.get(pname);
+				String field = pname.substring(0, pname.length() - 6).toUpperCase();
+				if ("EMAIL".equals(field)) {
+					userobj.setEmail(value);
+				} else if (field.startsWith("PASSWORD")) {
+					if ("PASSWORD".equals(field)) {
+						String pw2 = pmap.get("password_repeat_field");
+						
+					}
+				} else {
+					UserAttribute attr = amap.get(field);
+					if (attr == null) {
+						attr = new UserAttribute(field, value);
+						userobj.getAttributes().add(attr);
+					} else {
+						attr.setValue(value);
+					}
+				}
+			}
+		}
+		userManager.save(userobj);
+		
+		return new ModelAndView("users/manageUsers");
 	}
 	
 	
@@ -202,7 +240,8 @@ public class UserController {
 		}
 		return input;
 	}
-	
+
+
 	
 	private Map<String,String> getMapFromUser(User user) {
 		Map<String, String> rval = new HashMap<String, String>();

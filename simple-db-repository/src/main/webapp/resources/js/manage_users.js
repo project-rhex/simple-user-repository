@@ -27,6 +27,8 @@ users = {
 			if (title == undefined) {
 				title = '';
 			}
+			var user_id = row["ID"];
+			last = "<a href='" + users.base_path + "/users/editUser?user=" + user_id + "'>" + last + "</a>";
 			$("#people").append("<tr><td>" + last + "</td><td>" + first + "</td><td>" + title + "</td><td>" + email + "</td><td>unknown</td></tr>");
 		}
 		var sort = $("#sort_on").attr('value');
