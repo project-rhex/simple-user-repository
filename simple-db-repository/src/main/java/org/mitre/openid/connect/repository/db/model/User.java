@@ -18,6 +18,10 @@
  ***************************************************************************************/
 package org.mitre.openid.connect.repository.db.model;
 
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.sql.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -41,6 +45,7 @@ import javax.persistence.Table;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.eclipse.persistence.indirection.ValueHolder;
 import org.eclipse.persistence.indirection.ValueHolderInterface;
+import org.mitre.openid.connect.repository.db.UserManager;
 
 /**
  * Represents a single user to the system. Each user is identified by their 
@@ -80,6 +85,8 @@ public class User {
 	private Set<Role> roles = new HashSet<Role>();
 	private Set<UserAttribute> attributes;
 	private Date updated;
+	
+	private static SecureRandom random = new SecureRandom();
 	
 	/**
 	 * @return the id
@@ -263,6 +270,13 @@ public class User {
 	 */
 	public void setUpdated(Date updated) {
 		this.updated = updated;
+	}
+	
+	public void createPassword(String newPassword, UserManager um) throws NoSuchAlgorithmException, IOException {
+	    int psalt = random.nextInt();
+        String phash = um.salt(psalt, newPassword);
+        this.setPasswordHash(phash);
+        this.setPasswordSalt(psalt);
 	}
 
 	/* (non-Javadoc)

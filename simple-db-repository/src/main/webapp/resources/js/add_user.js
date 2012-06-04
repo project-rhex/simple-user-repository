@@ -56,6 +56,6 @@ usr = {
 }
 
 usr.User = Backbone.Model.extend({
-  urlRoot: "users/user",
+  urlRoot: "users/",
 });
 
