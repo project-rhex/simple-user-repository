@@ -25,6 +25,8 @@ request.setAttribute("base", base);
 </c:otherwise>
 </c:choose>
 <link rel="stylesheet/less" type="text/css" href="${base}/resources/stylesheets/users.less">
+<script type="text/javascript" src="${base}/resources/js/underscore-min.js"></script>
 <script type="text/javascript" src="${base}/resources/js/backbone-min.js"></script>
+<script type="text/javascript" src="${base}/resources/js/backbone.validations.js"></script>
 <script type="text/javascript" src="${base}/resources/js/less-1.3.0.min.js"></script>
 </head>

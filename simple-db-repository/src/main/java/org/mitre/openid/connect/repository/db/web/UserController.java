@@ -166,8 +166,13 @@ public class UserController {
 		return gson.toJson(user);
 	}
 	
-	@RequestMapping(value = "/user/{id}", method = {RequestMethod.POST, RequestMethod.PUT}) 
-	public String postUserData(@PathVariable Long id, HttpServletRequest request) {
+	@RequestMapping(value = "/user", method = RequestMethod.POST) 
+	public String postUserData(HttpServletRequest request) {
+		return putUserData(null, request);
+	}
+	
+	@RequestMapping(value = "/user/{id}", method = RequestMethod.PUT) 
+	public String putUserData(@PathVariable Long id, HttpServletRequest request) {
 		Gson gson = new Gson();
 		User postedUser = null;
 		try {

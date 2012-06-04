@@ -21,48 +21,60 @@
 <script type="text/javascript" src="${base}/resources/js/add_user.js"></script>
 <script type="text/javascript">
 $(document).ready(function() {
+	usr.init("${base}");
 	usr.populate();
 });
 </script>
-<o:header current_user="" current_role="" breadcrumbs="${bc}" />
+<o:header />
+<o:breadcrumbs breadcrumbs="${bc}" />
 <h2 class="span12">${label} User</h2>
-<form action="${base}/users/editUser" method="POST">
+<div class="container">
+<div class="row">
 <label class="span2" for="title_field">Title</label>
-<select id="title_field" class="span2>
+<select id="title_field" class="span2">
 	<option value="Dr">Dr</option>
 	<option value="Mr">Mr</option>
 	<option value="Ms">Ms</option>
 	<option value="Mrs">Mrs</option>
 	<option value="Miss">Miss</option>
 </select>
-<br>
+</div>
+<div class="row">
 <label class="span2" for="first_name_field">First Name</label>
-<input id="first_name_field" class="span4" size="40" />
-<br>
+<input id="first_name_field" class="span4" size="40">
+</div>
+<div class="row">
 <label class="span2" for="last_name_field">Last Name</label>
-<input id="last_name_field" class="span4" size="40" />
-<br>
+<input id="last_name_field" class="span4" size="40">
+</div>
+<div class="row">
 <label class="span2" for="email_field">Email</label>
-<input id="email_field" class="span4" size="40" />
-<form:errors path="email" />
-<br>
+<input id="email_field" class="span4" size="40">
+<span id="email_errors" class="span3 errors"></span>
+</div>
+<div class="row">
 <label class="span2" for="password_field">Password</label>
-<input type='password' id="password_field" class="span4" size="32" />
-<form:errors path="password" />
-<br>
+<input type='password' id="password_field" class="span4" size="32">
+<span id="password_errors" class="span3 errors"></span>
+</div>
+<div class="row">
 <label class="span2" for="password_repeat_field">Re-Type Password</label>
-<input type='password' id="password_repeat_field" class="span4" />
-<br>
+<input type='password' id="password_repeat_field" class="span4">
+</div>
+<div class="row">
 <label class="span2" for="role">Clinical role</label>
-<select id="role" span="span3">
+<select id="role_field" span="span3">
 	<option value="PATIENT">Patient</option>
 	<option value="CLINICIAN">Clinician</option>
 </select>
-<br>
-<input class="span1" type='submit' name="Add User' value='Add'>
-<input class="offset1 span1" type='submit' name="Cancel' value='Cancel'>
+</div>
+<div class="row">
+<span class="span1">&nbsp;</span>
+<input id="add" class="span2" type='button' value="Add User" title="Add User">
+<input id="cancel" class="span2" type='button' value="Cancel" title="Cancel">
+</div>
 <input type='hidden' id="user_id" />
 <input type='hidden' id="user" value="${user}" />
-</form>
+</div>
 </body>
 </html>

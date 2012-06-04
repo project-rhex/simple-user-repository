@@ -33,8 +33,8 @@ $(document).ready(function() {
 	users.paginator(${page}, "${sort_on}");
 });
 </script>
-
-<o:header current_user="" current_role="" breadcrumbs="${bc}" />
+<o:header />
+<o:breadcrumbs breadcrumbs="${bc}" />
 <h2 class="span12">Manage Users</h2>
 <a class="span12" href="${base}/users/addUser">Add User</a>
 <div id="users">
