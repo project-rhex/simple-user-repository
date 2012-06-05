@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +31,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
+import org.mitre.openid.connect.model.UserInfo;
 import org.mitre.openid.connect.repository.db.UserManager;
 import org.mitre.openid.connect.repository.db.UserManager.SortBy;
 import org.mitre.openid.connect.repository.db.model.User;
@@ -43,7 +46,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 /**
@@ -54,33 +59,22 @@ import com.google.gson.JsonParser;
 @Controller
 @RequestMapping("/users")
 public class UserController {
-
-	static class Results {
-		int page;
-		int count;
-		int total;
-		List<Map<String,String>> results;
-	}
 		
 	@Resource
 	private UserManager userManager;
 	private int count = 20;
 	
-	@RequestMapping("/index")
-	public @ResponseBody String findRange(@RequestParam("page") Integer page_number, @RequestParam("sort_on") String sortOn) {
-		int page = page_number != null ? page_number : 0;
-		int first = page * count;
-		SortBy sortBy = SortBy.valueOf(StringUtils.isNotBlank(sortOn) ? sortOn : "FIRST_NAME");
-		
-		List<Map<String, String>> values = userManager.findInRange(first, count, sortBy);
-		
+	@RequestMapping("/")
+	public @ResponseBody String findRange() {
 		Gson gson = new Gson();
-		Results h = new Results();
-		h.page = page;
-		h.count = count;
-		h.total = userManager.count();
-		h.results = values;
-		return gson.toJson(h);
+		JsonArray userArray = new JsonArray();
+		Collection<? extends UserInfo> allUsers = userManager.getAll();
+		for (Iterator iterator = allUsers.iterator(); iterator.hasNext();) {
+            UserInfo userInfo = (UserInfo) iterator.next();
+            userArray.add(gson.toJsonTree(userInfo));
+        }
+		
+		return userArray.toString();
 	}
 	
 	@RequestMapping("/paginator")

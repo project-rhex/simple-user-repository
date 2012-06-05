@@ -1,52 +1,52 @@
+User = Backbone.Model.extend({
+	  url: "users/",
+});
+
+UserList = Backbone.Collection.extend({
+	  url: "users/",
+	  model: User
+});
+
+UserView = Backbone.View.extend({
+	tagName: 'tr',
+	template: _.template('<td><%= email %></td><td>unknown</td>'),
+	render: function(){
+		var attributes = this.model.toJSON();
+		this.$el.html(this.template(attributes));
+	}
+});
+
+var UserListView = Backbone.View.extend({
+	  tagName: 'table',
+	  initialize: function(){
+	    this.collection.on('add', this.addOne, this);
+	  },
+	  addOne: function(user){
+	    var userView = new UserView({model: user});
+	    userView.render();
+	    this.$el.append(userView.el);
+	  },
+	  render: function(){
+	    this.collection.forEach(this.addOne, this);
+} });
+
+
 users = {
+		
 	set_base: function(base_path) {
 		users.base_path = base_path;
 	},
 		
 	loader: function(page, sort_column) {
-		var req = users.base_path + "/users/index?page=" + page + "&sort_on=" + sort_column;
-		$.ajax({
-			url: req,
-			type: 'get',
-	        dataType: 'json',
-	        success: users.populate
+		var userList = new UserList();
+		userList.fetch({success: function(retrievedList) {
+			var ulv = new UserListView({collection: retrievedList});
+			ulv.render();
+			$('#people').html(ulv.el);
+		}
 		});
 	},
 	
-	populate: function(resp) {
-		var count = resp.count;
-		var results = resp.results;
-		$("#people").children().remove();
-		$("#people").append("<tr><th data-sort='LAST_NAME'>Last Name</th><th data-sort='FIRST_NAME'>First Name</th><th data-sort='TITLE'>Title</th><th data-sort='EMAIL'>Email</th><th id='col_ll'>Last Login</th></tr>");
-		for(var i = 0; i < count; i++) {
-			var row = results[i];
-			var first = row["FIRST_NAME"];
-			var last = row["LAST_NAME"];
-			var email = row["EMAIL"];
-			var title = row["TITLE"];
-			if (title == undefined) {
-				title = '';
-			}
-			var user_id = row["ID"];
-			last = "<a href='" + users.base_path + "/users/editUser?user=" + user_id + "'>" + last + "</a>";
-			$("#people").append("<tr><td>" + last + "</td><td>" + first + "</td><td>" + title + "</td><td>" + email + "</td><td>unknown</td></tr>");
-		}
-		var sort = $("#sort_on").attr('value');
-		var page = $("#page").attr("value");
-		$('th[data-sort]').each(function(i, th){
-			var sort_val = $(th).attr('data-sort');
-			if (sort == sort_val) {
-				var ipath = users.base_path + '/resources/images/downarrow.png';
-				$(th).append("<img height='15' width='15' src='" + ipath + "'>");
-			} else {
-				var sort_path = users.base_path + "/users/manageUsers?page=" + page + "&sort_on=" + sort_val;
-				$(th).click(function() {
-					window.location = sort_path;
-				});
-				$(th).css('cursor', 'pointer');
-			}
-		});
-	},
 
 	paginator: function(page, sort_column) {
 		var req = users.base_path + "/users/paginator?page=" + page + "&sort_on=" + sort_column;
