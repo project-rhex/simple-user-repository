@@ -19,7 +19,6 @@
 package org.mitre.openid.connect.repository.db.model;
 
 import java.io.IOException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.Date;
@@ -42,10 +41,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.eclipse.persistence.indirection.ValueHolder;
-import org.eclipse.persistence.indirection.ValueHolderInterface;
-import org.mitre.openid.connect.repository.db.UserManager;
+import org.mitre.openid.connect.repository.UserManager;
 
 /**
  * Represents a single user to the system. Each user is identified by their 

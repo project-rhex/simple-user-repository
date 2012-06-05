@@ -48,7 +48,7 @@
 		<property name="databasePlatform" value="org.eclipse.persistence.platform.database.MySQLPlatform" />
 		<property name="showSql" value="true" />
 	</bean>
-	
+
     <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
     	<property name="entityManagerFactory" ref="entityManagerFactory" />
     </bean>
@@ -78,6 +78,9 @@
 		<property name="passwordRule">
 			<bean class="org.mitre.openid.connect.repository.db.impl.SimplePasswordRule" />
 		</property>
+	</bean>
+	
+	<bean id="userinfo" class="org.mitre.openid.connect.repository.db.impl.UserInfoRepositoryImpl">
 	</bean>
 	
 	<bean id="sender" class="org.springframework.mail.javamail.JavaMailSenderImpl">

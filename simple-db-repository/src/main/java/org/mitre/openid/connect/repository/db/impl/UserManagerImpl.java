@@ -43,12 +43,14 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.mitre.openid.connect.model.Address;
 import org.mitre.openid.connect.model.DefaultUserInfo;
 import org.mitre.openid.connect.model.UserInfo;
+import org.mitre.openid.connect.repository.SortBy;
+import org.mitre.openid.connect.repository.StandardAttributes;
+import org.mitre.openid.connect.repository.UserManager;
 import org.mitre.openid.connect.repository.db.IPasswordRule;
 import org.mitre.openid.connect.repository.db.IUserValidity;
 import org.mitre.openid.connect.repository.db.LockedUserException;
 import org.mitre.openid.connect.repository.db.PasswordException;
 import org.mitre.openid.connect.repository.db.UserException;
-import org.mitre.openid.connect.repository.db.UserManager;
 import org.mitre.openid.connect.repository.db.model.Role;
 import org.mitre.openid.connect.repository.db.model.User;
 import org.mitre.openid.connect.repository.db.model.UserAttribute;
@@ -211,6 +213,18 @@ public class UserManagerImpl implements UserManager {
 			em.remove(existing);
 		} else {
 			logger.warn("User could not be found: " + username);
+		}
+	}
+	
+	public void delete(Long userid) {
+		if (userid == null) {
+			throw new IllegalArgumentException("userid is a required argument");
+		}
+		User existing = findById(userid);
+		if (existing != null) {
+			em.remove(existing);
+		} else {
+			logger.warn("Userid could not be found: " + userid);
 		}
 	}
 	
@@ -533,189 +547,6 @@ public class UserManagerImpl implements UserManager {
 			rval.append(part);
 		}
 		return rval.toString();
-	}
-		
-	/* (non-Javadoc)
-	 * @see org.mitre.openid.connect.repository.UserInfoRepository#getByUserId(java.lang.String)
-	 */
-	public DefaultUserInfo getByUserId(String userId) {
-		if (userId == null || userId.trim().length() == 0) {
-			throw new IllegalArgumentException(
-					"userId should never be null or empty");
-		}
-		User user = get(userId);
-		if (user != null) {
-			return userToUserInfo(user);
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Convert a user object to a userInfo object
-	 * 
-	 * @param user
-	 * @return
-	 */
-	private DefaultUserInfo userToUserInfo(User user) {
-		Collection<UserAttribute> attrs = user.getAttributes();
-		Map<String, String> amap = attributesToMap(attrs);
-		DefaultUserInfo info = new DefaultUserInfo();
-		info.setEmail(user.getEmail());
-		info.setFamilyName(amap.get(StandardAttributes.LAST_NAME.name()));
-		info.setGender(amap.get(StandardAttributes.GENDER.name()));
-		info.setGivenName(amap.get(StandardAttributes.FIRST_NAME.name()));
-		info.setLocale(amap.get(StandardAttributes.LOCALE.name()));
-		info.setMiddleName(amap.get(StandardAttributes.MIDDLE_NAME.name()));
-		info.setName(amap.get(StandardAttributes.NAME.name()));
-		info.setNickname(amap.get(StandardAttributes.NICKNAME.name()));
-		info.setPhoneNumber(amap.get(StandardAttributes.PHONE_NUMBER.name()));
-		info.setPicture(amap.get(StandardAttributes.PICTURE.name()));
-		info.setProfile(amap.get(StandardAttributes.PROFILE.name()));
-		info.setUpdatedTime(amap.get(StandardAttributes.UPDATED_TIME.name()));
-		info.setUserId(user.getId().toString());
-		info.setVerified(user.getEmailConfirmed());
-		info.setWebsite(amap.get(StandardAttributes.WEBSITE.name()));
-		info.setZoneinfo(amap.get(StandardAttributes.ZONEINFO.name()));
-		String street = amap.get(StandardAttributes.STREET_ADDRESS.name());
-		String faddr = amap.get(StandardAttributes.FORMATTED_ADDRESS.name());
-		String locality = amap.get(StandardAttributes.LOCALITY.name());
-		String region = amap.get(StandardAttributes.REGION.name());
-		String postal = amap.get(StandardAttributes.POSTAL_CODE.name());
-		String country = amap.get(StandardAttributes.COUNTRY.name());
-		if (StringUtils.isNotBlank(street) || StringUtils.isNotBlank(faddr)
-				|| StringUtils.isNotBlank(locality)
-				|| StringUtils.isNotBlank(region)
-				|| StringUtils.isNotBlank(country)
-				|| StringUtils.isNotBlank(postal)) {
-			Address addr = new Address();
-			addr.setFormatted(faddr);
-			addr.setStreetAddress(street);
-			addr.setLocality(locality);
-			addr.setRegion(region);
-			addr.setCountry(country);
-			addr.setPostalCode(postal);
-			info.setAddress(addr);
-		}
-		return info;
-	}
-
-	/**
-	 * Convert attributes into a hash map
-	 * @param attrs
-	 * @return
-	 */
-	private Map<String, String> attributesToMap(Collection<UserAttribute> attrs) {
-		Map<String,String> rval = new HashMap<String, String>();
-		for(UserAttribute attr : attrs) {
-			if (attr.getType() != UserAttribute.NORMAL_TYPE) continue;
-			rval.put(attr.getName(), attr.getValue());
-		}
-		return rval;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.mitre.openid.connect.repository.UserInfoRepository#save(org.mitre.openid.connect.model.UserInfo)
-	 */
-	public UserInfo save(DefaultUserInfo userInfo) {
-		if (userInfo == null) {
-			throw new IllegalArgumentException(
-					"userInfo should never be null");
-		}
-		String userId = userInfo.getUserId();
-		if (userId == null || userId.trim().length() == 0) {
-			throw new IllegalArgumentException(
-					"userId should never be null or empty");
-		}
-		User user = get(userId);
-		if (user == null) {
-			user = new User();
-			user.setUsername(userId);
-			try {
-				setUserPassword(userId, Long.toHexString(RandomUtils.nextLong()),user);
-			} catch (UserException e) {
-				logger.error("Problem setting up user password in userinfo save", e);
-			}
-		}
-		/**
-		 * Set user information from userInfo
-		 */
-		if (StringUtils.isNotBlank(userInfo.getEmail()))
-			user.setEmail(userInfo.getEmail());
-		addUserAttribute(user, StandardAttributes.LAST_NAME, userInfo.getFamilyName());
-		addUserAttribute(user, StandardAttributes.FIRST_NAME, userInfo.getGivenName());
-		addUserAttribute(user, StandardAttributes.LOCALE, userInfo.getLocale());
-		addUserAttribute(user, StandardAttributes.MIDDLE_NAME, userInfo.getMiddleName());
-		addUserAttribute(user, StandardAttributes.NAME, userInfo.getName());
-		addUserAttribute(user, StandardAttributes.NICKNAME, userInfo.getNickname());
-		addUserAttribute(user, StandardAttributes.PHONE_NUMBER, userInfo.getPhoneNumber());
-		addUserAttribute(user, StandardAttributes.PICTURE, userInfo.getPicture());
-		addUserAttribute(user, StandardAttributes.PROFILE, userInfo.getProfile());
-		addUserAttribute(user, StandardAttributes.WEBSITE, userInfo.getWebsite());
-		addUserAttribute(user, StandardAttributes.ZONEINFO, userInfo.getZoneinfo());
-		addUserAttribute(user, StandardAttributes.GENDER, userInfo.getGender());
-		if (userInfo.getAddress() != null) {
-			Address addr = userInfo.getAddress();
-			addUserAttribute(user, StandardAttributes.FORMATTED_ADDRESS, addr.getFormatted());
-			addUserAttribute(user, StandardAttributes.STREET_ADDRESS, addr.getStreetAddress());
-			addUserAttribute(user, StandardAttributes.LOCALITY, addr.getLocality());
-			addUserAttribute(user, StandardAttributes.REGION, addr.getRegion());
-			addUserAttribute(user, StandardAttributes.POSTAL_CODE, addr.getPostalCode());
-			addUserAttribute(user, StandardAttributes.COUNTRY, addr.getCountry());
-		}
-		user.setEmailConfirmed(userInfo.getVerified());
-		save(user);
-		
-		return userInfo;
-	}
-	
-	/**
-	 * Add the named attribute to the user if not blank/null
-	 * @param user
-	 * @param attr
-	 * @param value
-	 */
-	private void addUserAttribute(User user, StandardAttributes name, String value) {
-		if (StringUtils.isNotBlank(value)) {
-			if (user.getAttributes() == null) {
-				user.setAttributes(new HashSet<UserAttribute>());
-			}
-			user.getAttributes().add(new UserAttribute(name, value));
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.mitre.openid.connect.repository.UserInfoRepository#remove(org.mitre.openid.connect.model.UserInfo)
-	 */
-	public void remove(UserInfo userInfo) {
-		removeByUserId(userInfo.getUserId());
-	}
-
-	/* (non-Javadoc)
-	 * @see org.mitre.openid.connect.repository.UserInfoRepository#removeByUserId(java.lang.String)
-	 */
-	public void removeByUserId(String userId) {
-		if (userId == null || userId.trim().length() == 0) {
-			throw new IllegalArgumentException(
-					"userId should never be null or empty");
-		}
-		User u = get(userId);
-		if (u != null) {
-			em.remove(u); // Insures that all cascading, etc. is done
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.mitre.openid.connect.repository.UserInfoRepository#getAll()
-	 */
-	public Collection<UserInfo> getAll() {
-		TypedQuery<User> uq = (TypedQuery<User>) em.createNamedQuery("users.all");
-		List<User> users = uq.getResultList();
-		List<UserInfo> userInfos = new ArrayList<UserInfo>();
-		for(User u : users) {
-			userInfos.add(userToUserInfo(u));
-		}
-		return userInfos;
 	}
 
 	/**

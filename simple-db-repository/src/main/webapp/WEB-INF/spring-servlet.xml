@@ -211,6 +211,9 @@
 			<bean class="org.mitre.openid.connect.repository.db.impl.SimplePasswordRule" />
 		</property>
 	</bean>
+	
+	<bean id="userinfo" class="org.mitre.openid.connect.repository.db.impl.UserInfoRepositoryImpl">
+	</bean>
 
 	<bean class="org.mitre.openid.connect.service.impl.UserInfoServiceImpl">
 		<property name="userInfoRepository" ref="userManager" />

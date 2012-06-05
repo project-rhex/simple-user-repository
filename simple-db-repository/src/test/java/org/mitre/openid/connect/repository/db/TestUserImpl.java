@@ -36,7 +36,9 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mitre.openid.connect.repository.db.UserManager.SortBy;
+import org.mitre.openid.connect.repository.SortBy;
+import org.mitre.openid.connect.repository.StandardAttributes;
+import org.mitre.openid.connect.repository.UserManager;
 import org.mitre.openid.connect.repository.db.model.Role;
 import org.mitre.openid.connect.repository.db.model.User;
 import org.mitre.openid.connect.repository.db.model.UserAttribute;
@@ -289,37 +291,37 @@ public class TestUserImpl {
 		List<Map<String, String>> results = usermanager.findInRange(0, 10, SortBy.FIRST_NAME);
 		assertNotNull(results);
 		assertEquals(10, results.size());
-		testOrdering(UserManager.SortBy.FIRST_NAME, results);
+		testOrdering(SortBy.FIRST_NAME, results);
 		
 		results = usermanager.findInRange(30, 10, SortBy.FIRST_NAME);
 		assertNotNull(results);
 		assertEquals(10, results.size());
-		testOrdering(UserManager.SortBy.FIRST_NAME, results);
+		testOrdering(SortBy.FIRST_NAME, results);
 		
 		results = usermanager.findInRange(50, 10, SortBy.LAST_NAME);
 		assertNotNull(results);
 		assertEquals(10, results.size());
-		testOrdering(UserManager.SortBy.LAST_NAME, results);
+		testOrdering(SortBy.LAST_NAME, results);
 		
 		results = usermanager.findInRange(5, 10, SortBy.EMAIL);
 		assertNotNull(results);
 		assertEquals(10, results.size());
-		testOrdering(UserManager.SortBy.EMAIL, results);
+		testOrdering(SortBy.EMAIL, results);
 		
 		results = usermanager.findInRange(55, 10, SortBy.EMAIL);
 		assertNotNull(results);
 		assertEquals(10, results.size());
-		testOrdering(UserManager.SortBy.EMAIL, results);
+		testOrdering(SortBy.EMAIL, results);
 		
 		results = usermanager.findInRange(0, 20, SortBy.USERNAME);
 		assertNotNull(results);
 		assertEquals(20, results.size());
-		testOrdering(UserManager.SortBy.USERNAME, results);
+		testOrdering(SortBy.USERNAME, results);
 		
 		results = usermanager.findInRange(75, 20, SortBy.USERNAME);
 		assertNotNull(results);
 		assertEquals(20, results.size());
-		testOrdering(UserManager.SortBy.USERNAME, results);		
+		testOrdering(SortBy.USERNAME, results);		
 	}
 	
 	private void testOrdering(SortBy key,
@@ -363,8 +365,8 @@ public class TestUserImpl {
 		usermanager.add(username, password);
 		User u = usermanager.get(username);
 		u.setEmail(email);
-		u.getAttributes().add(new UserAttribute(UserManager.StandardAttributes.FIRST_NAME, firstname, u));
-		u.getAttributes().add(new UserAttribute(UserManager.StandardAttributes.LAST_NAME, lastname, u));
+		u.getAttributes().add(new UserAttribute(StandardAttributes.FIRST_NAME, firstname, u));
+		u.getAttributes().add(new UserAttribute(StandardAttributes.LAST_NAME, lastname, u));
 		usermanager.save(u);
 	
 		

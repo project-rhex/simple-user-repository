@@ -34,7 +34,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.eclipse.persistence.indirection.ValueHolderInterface;
-import org.mitre.openid.connect.repository.db.UserManager;
+import org.mitre.openid.connect.repository.StandardAttributes;
 
 @Entity
 @Table(name = "USER_ATTRIBUTES")
@@ -73,7 +73,7 @@ public class UserAttribute {
 	 * @param value
 	 * @param params
 	 */
-	public UserAttribute(UserManager.StandardAttributes name, String value, Object... params) {
+	public UserAttribute(StandardAttributes name, String value, Object... params) {
 		this(name.name(), value, params);
 	}
 	

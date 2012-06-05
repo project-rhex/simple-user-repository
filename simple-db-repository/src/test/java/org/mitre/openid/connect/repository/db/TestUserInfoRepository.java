@@ -34,13 +34,18 @@ import org.junit.runner.RunWith;
 import org.mitre.openid.connect.model.Address;
 import org.mitre.openid.connect.model.DefaultUserInfo;
 import org.mitre.openid.connect.model.UserInfo;
+import org.mitre.openid.connect.repository.UserInfoRepository;
+import org.mitre.openid.connect.repository.UserManager;
 import org.mitre.openid.connect.repository.db.model.User;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/org/mitre/openid/connect/repository/db/test.xml" })
-public class TestUserInfoRepository {
+public class TestUserInfoRepository {	
+	@Resource
+	private UserInfoRepository userinforepo;
+	
 	@Resource
 	private UserManager usermanager;
 
@@ -86,10 +91,10 @@ public class TestUserInfoRepository {
 		userInfo.setProfile("http://www.facebook.com/mesmith");
 		userInfo.setWebsite("http://www.linkedin.com/mesmith");
 		userInfo.setZoneinfo("zone1");
-		usermanager.save((DefaultUserInfo) userInfo );
+		userinforepo.save((DefaultUserInfo) userInfo );
 		
 		// Retrieve and check
-		UserInfo ui = usermanager.getByUserId("msmith");
+		UserInfo ui = userinforepo.getByUserId("msmith");
 		assertNotNull(ui);
 		Address addr2 = ui.getAddress();
 		assertEquals("126 Penny Lane", addr2.getStreetAddress());
@@ -116,7 +121,7 @@ public class TestUserInfoRepository {
 	
 	@Test
 	public void testGetAll() throws Exception {
-		Collection<? extends UserInfo> results = usermanager.getAll();
+		Collection<? extends UserInfo> results = userinforepo.getAll();
 		assertNotNull(results);
 		assertTrue(results.size() > 1);
 	}
@@ -134,13 +139,13 @@ public class TestUserInfoRepository {
 		userInfo.setAddress(addr);
 		userInfo.setEmail("jdoe@aol.com");
 
-		usermanager.save((DefaultUserInfo) userInfo);
+		userinforepo.save((DefaultUserInfo) userInfo);
 		
-		UserInfo jdoe = usermanager.getByUserId("jdoe");
+		UserInfo jdoe = userinforepo.getByUserId("jdoe");
 		assertNotNull(jdoe);
 		
-		usermanager.remove(userInfo);
-		jdoe = usermanager.getByUserId("jdoe");
+		userinforepo.remove(userInfo);
+		jdoe = userinforepo.getByUserId("jdoe");
 		assertNull(jdoe);
 	}
 	
@@ -157,13 +162,13 @@ public class TestUserInfoRepository {
 		userInfo.setAddress(addr);
 		userInfo.setEmail("jdoe@aol.com");
 
-		usermanager.save((DefaultUserInfo) userInfo);
+		userinforepo.save((DefaultUserInfo) userInfo);
 		
-		UserInfo jdoe = usermanager.getByUserId("jdoe");
+		UserInfo jdoe = userinforepo.getByUserId("jdoe");
 		assertNotNull(jdoe);
 		
-		usermanager.removeByUserId("jdoe");
-		jdoe = usermanager.getByUserId("jdoe");
+		userinforepo.removeByUserId("jdoe");
+		jdoe = userinforepo.getByUserId("jdoe");
 		assertNull(jdoe);
 	}
 }

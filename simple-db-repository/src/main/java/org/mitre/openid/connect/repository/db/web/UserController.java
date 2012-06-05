@@ -32,8 +32,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.mitre.openid.connect.model.UserInfo;
-import org.mitre.openid.connect.repository.db.UserManager;
-import org.mitre.openid.connect.repository.db.UserManager.SortBy;
+import org.mitre.openid.connect.repository.SortBy;
+import org.mitre.openid.connect.repository.UserInfoRepository;
+import org.mitre.openid.connect.repository.UserManager;
 import org.mitre.openid.connect.repository.db.model.User;
 import org.mitre.openid.connect.repository.db.util.ParseRequestContext;
 import org.springframework.stereotype.Controller;
@@ -61,6 +62,8 @@ import com.google.gson.JsonParser;
 public class UserController {
 		
 	@Resource
+	private UserInfoRepository userinfo;
+	@Resource
 	private UserManager userManager;
 	private int count = 20;
 	
@@ -68,7 +71,7 @@ public class UserController {
 	public @ResponseBody String findRange() {
 		Gson gson = new Gson();
 		JsonArray userArray = new JsonArray();
-		Collection<? extends UserInfo> allUsers = userManager.getAll();
+		Collection<? extends UserInfo> allUsers = userinfo.getAll();
 		for (Iterator iterator = allUsers.iterator(); iterator.hasNext();) {
             UserInfo userInfo = (UserInfo) iterator.next();
             userArray.add(gson.toJsonTree(userInfo));
