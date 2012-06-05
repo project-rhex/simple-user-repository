@@ -21,25 +21,24 @@ package org.mitre.openid.connect.repository.db.web;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
+import org.mitre.openid.connect.model.UserInfo;
 import org.mitre.openid.connect.repository.db.UserManager;
 import org.mitre.openid.connect.repository.db.UserManager.SortBy;
 import org.mitre.openid.connect.repository.db.model.User;
-import org.mitre.openid.connect.repository.db.model.UserAttribute;
 import org.mitre.openid.connect.repository.db.util.ParseRequestContext;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -47,10 +46,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 /**
  * Handle user requests
@@ -60,34 +59,22 @@ import com.google.gson.JsonObject;
 @Controller
 @RequestMapping("/users")
 public class UserController {
-	private static final String USER_ID = "user_id";
-
-	static class Results {
-		int page;
-		int count;
-		int total;
-		List<Map<String,String>> results;
-	}
 		
 	@Resource
 	private UserManager userManager;
 	private int count = 20;
 	
-	@RequestMapping("/index")
-	public @ResponseBody String findRange(@RequestParam("page") Integer page_number, @RequestParam("sort_on") String sortOn) {
-		int page = page_number != null ? page_number : 0;
-		int first = page * count;
-		SortBy sortBy = SortBy.valueOf(StringUtils.isNotBlank(sortOn) ? sortOn : "FIRST_NAME");
-		
-		List<Map<String, String>> values = userManager.findInRange(first, count, sortBy);
-		
+	@RequestMapping("/")
+	public @ResponseBody String findRange() {
 		Gson gson = new Gson();
-		Results h = new Results();
-		h.page = page;
-		h.count = count;
-		h.total = userManager.count();
-		h.results = values;
-		return gson.toJson(h);
+		JsonArray userArray = new JsonArray();
+		Collection<? extends UserInfo> allUsers = userManager.getAll();
+		for (Iterator iterator = allUsers.iterator(); iterator.hasNext();) {
+            UserInfo userInfo = (UserInfo) iterator.next();
+            userArray.add(gson.toJsonTree(userInfo));
+        }
+		
+		return userArray.toString();
 	}
 	
 	@RequestMapping("/paginator")
@@ -159,35 +146,50 @@ public class UserController {
 		return mav;
 	}
 	
-	@RequestMapping(value = "/user/{id}", method = RequestMethod.GET)
+	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	public String getUserData(@PathVariable Long id) {
 		User user = userManager.findById(id);
 		Gson gson = new Gson();
 		return gson.toJson(user);
 	}
 	
-	@RequestMapping(value = "/user", method = RequestMethod.POST) 
-	public String postUserData(HttpServletRequest request) {
-		return putUserData(null, request);
+	@RequestMapping(value = "", method = RequestMethod.POST)
+	@ResponseBody
+	public String postUserData(@RequestBody String userJson) {
+	    processUserData(userJson, null);
+	    return "{ success: true }";
 	}
 	
-	@RequestMapping(value = "/user/{id}", method = RequestMethod.PUT) 
-	public String putUserData(@PathVariable Long id, HttpServletRequest request) {
-		Gson gson = new Gson();
-		User postedUser = null;
-		try {
-			Reader r = request.getReader();
-			postedUser = gson.fromJson(r, User.class);
-		} catch (IOException e) {
-			throw new RuntimeException("Couldn't read serialized user object");
-		}
-		
-		if (request.getMethod() == "PUT") 
-			postedUser.setId(id);
-		
-		userManager.save(postedUser);
+	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+	@ResponseBody
+	public String putUserData(@PathVariable Long id, @RequestBody String userJson) {
+	    processUserData(userJson, id);
 		return "{ success: true }";
-	}	
+	}
+	
+	private void processUserData(String userJson, Long userId) {
+        Gson gson = new Gson();
+        User postedUser = null;
+        try {
+            JsonParser parser = new JsonParser();
+            JsonElement obj = parser.parse(userJson);
+            postedUser = gson.fromJson(obj, User.class);
+            if (obj.isJsonObject()) {
+                String password = obj.getAsJsonObject().get("password").getAsString();
+                postedUser.createPassword(password, userManager);
+            }
+            postedUser.setUsername(postedUser.getEmail());
+        } catch (IOException e) {
+            throw new RuntimeException("Couldn't read serialized user object", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Couldn't hash the password", e);
+        }
+        
+        if (userId != null) { 
+            postedUser.setId(userId);
+        }
+        userManager.save(postedUser);
+	}
 	
 	/**
 	 * @return the um
