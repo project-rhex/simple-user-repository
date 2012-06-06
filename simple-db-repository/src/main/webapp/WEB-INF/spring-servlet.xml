@@ -21,6 +21,7 @@
 		<context:exclude-filter type="regex" expression=".*\.UserManagerImpl"/>
 		<context:exclude-filter type="regex" expression=".*\.JpaUserInfoRepository"/>
 		<context:exclude-filter type="regex" expression=".*\.UserInfoServiceImpl"/>
+		<context:exclude-filter type="regex" expression=".*\.UserInfoRepositoryImpl"/>
 	</context:component-scan>
 	
 	<!-- Enables the Spring MVC @Controller programming model -->
@@ -216,7 +217,7 @@
 	</bean>
 
 	<bean class="org.mitre.openid.connect.service.impl.UserInfoServiceImpl">
-		<property name="userInfoRepository" ref="userManager" />
+		<property name="userInfoRepository" ref="userinfo" />
 	</bean>
 	
 	<bean id="sender" class="org.springframework.mail.javamail.JavaMailSenderImpl">

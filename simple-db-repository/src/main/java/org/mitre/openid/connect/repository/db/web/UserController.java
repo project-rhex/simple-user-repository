@@ -23,9 +23,11 @@ import java.io.Reader;
 import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -36,6 +38,7 @@ import org.mitre.openid.connect.repository.SortBy;
 import org.mitre.openid.connect.repository.UserInfoRepository;
 import org.mitre.openid.connect.repository.UserManager;
 import org.mitre.openid.connect.repository.db.model.User;
+import org.mitre.openid.connect.repository.db.model.UserAttribute;
 import org.mitre.openid.connect.repository.db.util.ParseRequestContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -67,7 +70,7 @@ public class UserController {
 	private UserManager userManager;
 	private int count = 20;
 	
-	@RequestMapping("/")
+	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public @ResponseBody String findRange() {
 		Gson gson = new Gson();
 		JsonArray userArray = new JsonArray();
@@ -180,6 +183,16 @@ public class UserController {
             if (obj.isJsonObject()) {
                 String password = obj.getAsJsonObject().get("password").getAsString();
                 postedUser.createPassword(password, userManager);
+            }
+            // Grab other attributes - the json is not really a User serialization
+            for(Entry<String, JsonElement> entry : ((JsonObject) obj).entrySet()) {
+            	String key = entry.getKey();
+            	JsonElement value = entry.getValue();
+            	if (key.startsWith("password") || "email".equals(key)) continue;
+            	if (postedUser.getAttributes() == null) {
+            		postedUser.setAttributes(new HashSet<UserAttribute>());
+            	}
+            	postedUser.getAttributes().add(new UserAttribute(key.toUpperCase(), value.getAsString()));
             }
             postedUser.setUsername(postedUser.getEmail());
         } catch (IOException e) {

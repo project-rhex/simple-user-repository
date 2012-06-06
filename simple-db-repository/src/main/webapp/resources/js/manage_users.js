@@ -47,17 +47,6 @@ users = {
 		});
 	},
 	
-
-	paginator: function(page, sort_column) {
-		var req = users.base_path + "/users/paginator?page=" + page + "&sort_on=" + sort_column;
-		$.ajax({
-			url: req,
-			type: 'get',
-	        dataType: 'text',
-	        success: users.paginator_insert
-		});
-	},
-	
 	paginator_insert: function(text) {
 		$("#paginator").append(text);
 	}	

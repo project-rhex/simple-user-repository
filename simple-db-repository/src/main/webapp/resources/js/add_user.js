@@ -1,5 +1,3 @@
-var User;
-
 usr = {
   init:	function(base_path) {
 	  sdb_webapp_base = base_path;
@@ -38,10 +36,15 @@ usr = {
 	  else {
 		var u = new usr.User(usr.results);
 		u.save();
+		usr.nav_to_usr_list;
 	  }  
   },
   
   cancel: function() {
+	  usr.nav_to_usr_list;
+  },
+  
+  nav_to_user_list: function() {
 	  window.location.href = sdb_webapp_base + "/users/manageUsers";
   },
   

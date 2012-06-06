@@ -36,6 +36,7 @@ import org.mitre.openid.connect.model.DefaultUserInfo;
 import org.mitre.openid.connect.model.UserInfo;
 import org.mitre.openid.connect.repository.UserInfoRepository;
 import org.mitre.openid.connect.repository.UserManager;
+import org.mitre.openid.connect.repository.db.data.PropertiedUserInfo;
 import org.mitre.openid.connect.repository.db.model.User;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -67,7 +68,7 @@ public class TestUserInfoRepository {
 	
 	@Test
 	public void testSaveAndGetByUserId() throws Exception {
-		UserInfo userInfo = new DefaultUserInfo();
+		PropertiedUserInfo userInfo = new PropertiedUserInfo();
 		Address addr = new Address();
 		addr.setLocality("Chelmsford");
 		addr.setRegion("Massachusetts");
@@ -90,11 +91,12 @@ public class TestUserInfoRepository {
 		userInfo.setPicture("http://www.flicker.com/123456.png");
 		userInfo.setProfile("http://www.facebook.com/mesmith");
 		userInfo.setWebsite("http://www.linkedin.com/mesmith");
+		userInfo.setProperty("AGE", "36");
 		userInfo.setZoneinfo("zone1");
 		userinforepo.save((DefaultUserInfo) userInfo );
 		
 		// Retrieve and check
-		UserInfo ui = userinforepo.getByUserId("msmith");
+		PropertiedUserInfo ui = (PropertiedUserInfo) userinforepo.getByUserId("msmith");
 		assertNotNull(ui);
 		Address addr2 = ui.getAddress();
 		assertEquals("126 Penny Lane", addr2.getStreetAddress());
@@ -117,6 +119,7 @@ public class TestUserInfoRepository {
 		assertEquals("http://www.facebook.com/mesmith", ui.getProfile());
 		assertEquals("http://www.linkedin.com/mesmith", ui.getWebsite());
 		assertEquals("zone1", ui.getZoneinfo());
+		assertEquals("36", ui.getProperty("AGE"));
 	}
 	
 	@Test
