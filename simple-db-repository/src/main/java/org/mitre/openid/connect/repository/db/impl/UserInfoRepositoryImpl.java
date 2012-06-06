@@ -222,7 +222,7 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
 		// Handle the extended properties
 		for(String key : amap.keySet()) {
 			String value = amap.get(key);
-			info.setProperty(key.toUpperCase(), value);
+			info.setProperty(key, value);
 		}
 		
 		return info;

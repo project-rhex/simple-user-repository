@@ -84,7 +84,7 @@ public class UserAttribute {
 	 * @param params
 	 */
 	public UserAttribute(String name, String value, Object... params) {
-		setName(name);
+		setName(name.toUpperCase());
 		setValue(value);
 		setType(NORMAL_TYPE);
 		if (params.length > 0) {

@@ -36,12 +36,12 @@ usr = {
 	  else {
 		var u = new usr.User(usr.results);
 		u.save();
-		usr.nav_to_usr_list;
+		usr.nav_to_user_list();
 	  }  
   },
   
   cancel: function() {
-	  usr.nav_to_usr_list;
+	  usr.nav_to_user_list();
   },
   
   nav_to_user_list: function() {
