@@ -47,6 +47,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.google.gson.Gson;
@@ -138,37 +139,41 @@ public class UserController {
 		return editUser(null);
 	}
 	
-	@RequestMapping(value = "/editUser", method = RequestMethod.GET) 
-	public ModelAndView editUser(@RequestParam(value="user") Long userid) {
+	@RequestMapping(value = "/editUser/{id}", method = RequestMethod.GET) 
+	public ModelAndView editUser(@PathVariable Long id) {
 		ModelAndView mav = new ModelAndView("users/addOrEditUser");
-		if (userid == null) {
+		if (id == null) {
 			mav.addObject("label", "Add");
 			mav.addObject("userid", "-1");
 		} else {
-			User user = userManager.findById(userid);
+			User user = userManager.findById(id);
 			mav.addObject("label", "Edit");
-			mav.addObject("userid", userid.toString());
+			mav.addObject("userid", id.toString());
 		}
 		return mav;
 	}
 	
+	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+	public @ResponseStatus int deleteUser(@PathVariable Long id) {
+		userManager.delete(id);
+		return 200;
+	}
+	
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
-	public String getUserData(@PathVariable Long id) {
+	public @ResponseBody String getUserData(@PathVariable Long id) {
 		User user = userManager.findById(id);
 		Gson gson = new Gson();
 		return gson.toJson(user);
 	}
 	
 	@RequestMapping(value = "", method = RequestMethod.POST)
-	@ResponseBody
-	public String postUserData(@RequestBody String userJson) {
+	public @ResponseBody String postUserData(@RequestBody String userJson) {
 	    processUserData(userJson, null);
 	    return "{ success: true }";
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-	@ResponseBody
-	public String putUserData(@PathVariable Long id, @RequestBody String userJson) {
+	public @ResponseBody String putUserData(@PathVariable Long id, @RequestBody String userJson) {
 	    processUserData(userJson, id);
 		return "{ success: true }";
 	}

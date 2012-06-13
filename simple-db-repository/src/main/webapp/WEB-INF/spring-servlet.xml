@@ -38,56 +38,6 @@
 	<!-- Import the data context -->
 	<import resource="data-context.xml" />	
 
-<!-- Spring Security configuration -->
-	<security:global-method-security pre-post-annotations="enabled" proxy-target-class="true" authentication-manager-ref="springSecurityAuthenticationManager"/>
-
-	<security:http pattern="/oauth/token" create-session="stateless" authentication-manager-ref="clientAuthenticationManager" 
-		entry-point-ref="oauthAuthenticationEntryPoint">
-		<security:intercept-url pattern="/oauth/token" access="IS_AUTHENTICATED_FULLY" />
-		<security:anonymous enabled="false" />
-		<security:http-basic entry-point-ref="oauthAuthenticationEntryPoint" />
-		<!-- include this only if you need to authenticate clients via request parameters -->
-		<security:custom-filter ref="clientCredentialsTokenEndpointFilter" before="BASIC_AUTH_FILTER" />
-		<security:access-denied-handler ref="oauthAccessDeniedHandler" />
-	</security:http>
-
-	<security:http auto-config="true" disable-url-rewriting="true"> <!-- authentication-manager-ref="springSecurityAuthenticationManager" -->
-		<security:intercept-url pattern="/oauth/**" access="ROLE_USER" />
-		<security:intercept-url pattern="/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
-		<security:anonymous />
-	</security:http>
-	
-	<bean class="org.springframework.security.oauth2.provider.approval.TokenServicesUserApprovalHandler" id="userApprovalHandler">
-		<property name="tokenServices" ref="defaultOAuth2ProviderTokenService"/>
-	</bean>
-
-	<bean id="oauthAuthenticationEntryPoint" class="org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint">
-		<property name="realmName" value="openidconnect" />
-	</bean>
-
-	<!-- SECOAUTH Authorization Server, with our custom token granter plugged in -->
-	<oauth:authorization-server client-details-service-ref="defaultOAuth2ClientDetailsEntityService" 
-		token-services-ref="defaultOAuth2ProviderTokenService" token-granter-ref="connectAuthCodeTokenGranter"
-		user-approval-handler-ref="userApprovalHandler">
-		<oauth:authorization-code authorization-code-services-ref="authCodeServices" />
-	</oauth:authorization-server>
-
-	<bean id="oauthAccessDeniedHandler" class="org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler" />
-
-	<bean id="clientCredentialsTokenEndpointFilter" class="org.springframework.security.oauth2.provider.client.ClientCredentialsTokenEndpointFilter">
-		<property name="authenticationManager" ref="clientAuthenticationManager" />
-	</bean>
-
-	<authentication-manager id="clientAuthenticationManager" xmlns="http://www.springframework.org/schema/security">
-		<authentication-provider user-service-ref="clientUserDetailsService" />
-	</authentication-manager>
-
-	<bean id="clientCredentialsChecker" class="org.springframework.security.oauth2.provider.ClientCredentialsChecker">
-		<constructor-arg>
-			<bean class="org.mitre.oauth2.service.impl.DefaultOAuth2ClientDetailsEntityService"/>
-		</constructor-arg>
-	</bean>	
-
 	<bean id="authCodeServices" class="org.springframework.security.oauth2.provider.code.InMemoryAuthorizationCodeServices"/>
 
 	<security:authentication-manager alias="authenticationManager">
@@ -106,7 +56,7 @@
 		
 <!-- End Spring Security configuration -->	
 		
-<!-- JPA  -->
+	<!-- JPA  -->
 	
 	<bean id="jpaAdapter" class="org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter">
 		<property name="databasePlatform" value="org.eclipse.persistence.platform.database.MySQLPlatform" />

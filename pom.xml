@@ -15,7 +15,7 @@
 			<groupId>org.mitre</groupId>
 			<artifactId>openid-connect-server</artifactId>
 			<type>war</type>
-			<version>0.1</version>
+			<version>0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 	<properties>
