@@ -40,6 +40,7 @@ import org.mitre.openid.connect.repository.UserManager;
 import org.mitre.openid.connect.repository.db.model.User;
 import org.mitre.openid.connect.repository.db.model.UserAttribute;
 import org.mitre.openid.connect.repository.db.util.ParseRequestContext;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -122,6 +123,7 @@ public class UserController {
 	}
 	
 	@RequestMapping("/manageUsers")
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	public ModelAndView manageUsers(@RequestParam(value="page", defaultValue="0") Integer page, 
 			@RequestParam(value="sort_on", defaultValue="FIRST_NAME") String sortOn) {
 		int first = page * count;

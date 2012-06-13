@@ -330,4 +330,5 @@
 			</snapshots>
 		</repository>
 	</repositories>
+	<name>Simple User Repository DB Implementation</name>
 </project>
