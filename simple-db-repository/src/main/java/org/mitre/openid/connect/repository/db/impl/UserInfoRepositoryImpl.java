@@ -26,16 +26,19 @@ import org.mitre.openid.connect.repository.db.model.User;
 import org.mitre.openid.connect.repository.db.model.UserAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 @Repository
+@Primary
 public class UserInfoRepositoryImpl implements UserInfoRepository {
 	private static final Logger logger = LoggerFactory
 			.getLogger(UserInfoRepositoryImpl.class);
 	
-	@Resource
+	@Autowired
 	private UserManager userManager;
 	
 	@PersistenceContext

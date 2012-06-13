@@ -26,7 +26,7 @@ $(document).ready(function() {
 });
 </script>
 <o:header />
-<o:breadcrumbs breadcrumbs="${bc}" />
+<o:breadcrumbs-db breadcrumbs="${bc}" />
 <h2 class="span12">${label} User</h2>
 <div class="container">
 <div class="row">
