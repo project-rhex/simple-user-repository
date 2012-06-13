@@ -19,14 +19,11 @@
 package org.mitre.openid.connect.repository.db.web;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.annotation.Resource;
@@ -40,6 +37,9 @@ import org.mitre.openid.connect.repository.UserManager;
 import org.mitre.openid.connect.repository.db.model.User;
 import org.mitre.openid.connect.repository.db.model.UserAttribute;
 import org.mitre.openid.connect.repository.db.util.ParseRequestContext;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -60,6 +60,7 @@ import com.google.gson.JsonParser;
  * @author DRAND
  *
  */
+// @PreAuthorize("hasRole('ROLE_ADMIN')") 
 @Controller
 @RequestMapping("/users")
 public class UserController {
@@ -153,9 +154,9 @@ public class UserController {
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-	public @ResponseBody String deleteUser(@PathVariable Long id) {
+	public HttpEntity<String> deleteUser(@PathVariable Long id) {
 		userManager.delete(id);
-		return "{ success: true }";
+		return new ResponseEntity<String>("{ success: true }", HttpStatus.OK);
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)

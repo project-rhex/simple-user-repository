@@ -31,10 +31,10 @@ users = {
 			var uid = tr.attr("data-user-id");
 			var user = new User({"user-id": uid});
 			user.destroy({
-			success: function(m, r) {
+			success: function(data, stat, xhr) {
 				tr.remove();
 			},
-			error: function(m, r) {
+			error: function(xhr, stat, error) {
 				alert("error");
 			}
 			});
