@@ -47,7 +47,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.google.gson.Gson;
@@ -154,9 +153,9 @@ public class UserController {
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-	public @ResponseStatus int deleteUser(@PathVariable Long id) {
+	public @ResponseBody String deleteUser(@PathVariable Long id) {
 		userManager.delete(id);
-		return 200;
+		return "{ success: true }";
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
