@@ -21,6 +21,7 @@ package org.mitre.openid.connect.repository.db.web;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,10 +38,12 @@ import org.mitre.openid.connect.repository.UserManager;
 import org.mitre.openid.connect.repository.db.model.User;
 import org.mitre.openid.connect.repository.db.model.UserAttribute;
 import org.mitre.openid.connect.repository.db.util.ParseRequestContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.encoding.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -61,15 +64,19 @@ import com.google.gson.JsonParser;
  * @author DRAND
  *
  */
-// @PreAuthorize("hasRole('ROLE_ADMIN')") 
+@PreAuthorize("hasRole('ROLE_ADMIN')") 
 @Controller
 @RequestMapping("/users")
 public class UserController {
 		
-	@Resource
+	private static final String SUCCESS_TRUE = "{ \"success\": true }";
+	@Autowired
 	private UserInfoRepository userinfo;
-	@Resource
+	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private PasswordEncoder simplePasswordEncoder;
+	private SecureRandom random = new SecureRandom();
 	private int count = 20;
 	
 	@RequestMapping(value = "/", method = RequestMethod.GET)
@@ -79,7 +86,8 @@ public class UserController {
 		Collection<? extends UserInfo> allUsers = userinfo.getAll();
 		for (Iterator iterator = allUsers.iterator(); iterator.hasNext();) {
             UserInfo userInfo = (UserInfo) iterator.next();
-            userArray.add(gson.toJsonTree(userInfo));
+            JsonObject el = (JsonObject) gson.toJsonTree(userInfo);
+            userArray.add(el);
         }
 		
 		return userArray.toString();
@@ -155,10 +163,10 @@ public class UserController {
 		return mav;
 	}
 	
-	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-	public HttpEntity<String> deleteUser(@PathVariable Long id) {
-		userManager.delete(id);
-		return new ResponseEntity<String>("{ success: true }", HttpStatus.OK);
+	@RequestMapping(value = "/{userid}", method = RequestMethod.DELETE)
+	public HttpEntity<String> deleteUser(@PathVariable Long userid) {
+		userManager.delete(userid);
+		return new ResponseEntity<String>(SUCCESS_TRUE, HttpStatus.OK);
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
@@ -171,42 +179,38 @@ public class UserController {
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public @ResponseBody String postUserData(@RequestBody String userJson) {
 	    processUserData(userJson, null);
-	    return "{ success: true }";
+	    return SUCCESS_TRUE;
 	}
 	
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
 	public @ResponseBody String putUserData(@PathVariable Long id, @RequestBody String userJson) {
 	    processUserData(userJson, id);
-		return "{ success: true }";
+		return SUCCESS_TRUE;
 	}
 	
 	private void processUserData(String userJson, Long userId) {
         Gson gson = new Gson();
         User postedUser = null;
-        try {
-            JsonParser parser = new JsonParser();
-            JsonElement obj = parser.parse(userJson);
-            postedUser = gson.fromJson(obj, User.class);
-            if (obj.isJsonObject()) {
-                String password = obj.getAsJsonObject().get("password").getAsString();
-                postedUser.createPassword(password, userManager);
-            }
-            // Grab other attributes - the json is not really a User serialization
-            for(Entry<String, JsonElement> entry : ((JsonObject) obj).entrySet()) {
-            	String key = entry.getKey();
-            	JsonElement value = entry.getValue();
-            	if (key.startsWith("password") || "email".equals(key)) continue;
-            	if (postedUser.getAttributes() == null) {
-            		postedUser.setAttributes(new HashSet<UserAttribute>());
-            	}
-            	postedUser.getAttributes().add(new UserAttribute(key.toUpperCase(), value.getAsString()));
-            }
-            postedUser.setUsername(postedUser.getEmail());
-        } catch (IOException e) {
-            throw new RuntimeException("Couldn't read serialized user object", e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Couldn't hash the password", e);
+        JsonParser parser = new JsonParser();
+        JsonElement obj = parser.parse(userJson);
+        postedUser = gson.fromJson(obj, User.class);
+        if (obj.isJsonObject()) {
+            String password = obj.getAsJsonObject().get("password").getAsString();
+            Integer salt = random.nextInt();
+            postedUser.setPasswordHash(simplePasswordEncoder.encodePassword(password, salt));
+            postedUser.setPasswordSalt(salt);
         }
+        // Grab other attributes - the json is not really a User serialization
+        for(Entry<String, JsonElement> entry : ((JsonObject) obj).entrySet()) {
+        	String key = entry.getKey();
+        	JsonElement value = entry.getValue();
+        	if (key.startsWith("password") || "email".equals(key)) continue;
+        	if (postedUser.getAttributes() == null) {
+        		postedUser.setAttributes(new HashSet<UserAttribute>());
+        	}
+        	postedUser.getAttributes().add(new UserAttribute(key.toUpperCase(), value.getAsString()));
+        }
+        postedUser.setUsername(postedUser.getEmail());
         
         if (userId != null) { 
             postedUser.setId(userId);

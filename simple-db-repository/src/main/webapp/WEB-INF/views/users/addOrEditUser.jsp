@@ -4,7 +4,9 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<o:head title="User Management - ${label} User Page" />
+<o:header title="User Management - ${label} User Page" />
+<o:topbar />
+<o:includes />
 <%
 	String base = (String) request.getAttribute("base"); // Calculated in o:head
 	String label = (String) pageContext.getAttribute("label");
@@ -17,14 +19,6 @@
 	bc.add(new Breadcrumb(label + " User"));
 	request.setAttribute("bc", bc);
 %>
-<body>
-<script type="text/javascript" src="${base}/resources/js/add_user.js"></script>
-<script type="text/javascript">
-$(document).ready(function() {
-	usr.init("${base}");
-	usr.populate();
-});
-</script>
 <o:header />
 <o:breadcrumbs-db breadcrumbs="${bc}" />
 <h2 class="span12">${label} User</h2>
@@ -76,5 +70,5 @@ $(document).ready(function() {
 <input type='hidden' id="user_id" />
 <input type='hidden' id="user" value="${user}" />
 </div>
-</body>
-</html>
+<o:copyright />
+<o:footer-db include="add_user" />

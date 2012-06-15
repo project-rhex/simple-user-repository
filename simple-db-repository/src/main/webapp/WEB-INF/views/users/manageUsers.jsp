@@ -23,16 +23,9 @@
 %>   
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<o:head title="User Management - User List Page" />
-<body>
-<script type="text/javascript" src="${base}/resources/js/manage_users.js"></script>
-<script type="text/javascript">
-$(document).ready(function() {
-	users.set_base("${base}");
-	users.loader(${page}, "${sort_on}");
-	users.paginator(${page}, "${sort_on}");
-});
-</script>
+<o:header title="User Management - User List Page" />
+<o:topbar />
+<o:includes />
 <o:header />
 <o:breadcrumbs-db breadcrumbs="${bc}" />
 <h2 class="span12">Manage Users</h2>
@@ -44,5 +37,6 @@ $(document).ready(function() {
 </div>
 <input id="page" type="hidden" name="page" value="${page}">
 <input id="sort_on" type="hidden" name="sort_on" value="${sort_on}">
-</body>
-</html>
+<br clear="all">
+<o:copyright />
+<o:footer-db include="manage_users" />

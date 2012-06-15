@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,6 +44,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.mitre.openid.connect.repository.UserManager;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Represents a single user to the system. Each user is identified by their 
@@ -69,7 +74,7 @@ import org.mitre.openid.connect.repository.UserManager;
 		@NamedQuery(name = "users.count",
 			query = "select count(u) from User u")
 })
-public class User {
+public class User implements UserDetails {
 	private Long id;
 	private String username;
 	private Integer passwordSalt;	
@@ -267,13 +272,6 @@ public class User {
 	public void setUpdated(Date updated) {
 		this.updated = updated;
 	}
-	
-	public void createPassword(String newPassword, UserManager um) throws NoSuchAlgorithmException, IOException {
-	    int psalt = random.nextInt();
-        String phash = um.salt(psalt, newPassword);
-        this.setPasswordHash(phash);
-        this.setPasswordSalt(psalt);
-	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
@@ -371,6 +369,58 @@ public class User {
 				return false;
 		} else if (!username.equals(other.username))
 			return false;
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.security.core.userdetails.UserDetails#getAuthorities()
+	 */
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		Collection authorities = new ArrayList<GrantedAuthority>();
+		for(Role role : roles) {
+			authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
+		}
+		return authorities;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.security.core.userdetails.UserDetails#getPassword()
+	 */
+	public String getPassword() {
+		return passwordHash;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.security.core.userdetails.UserDetails#isAccountNonExpired()
+	 */
+	public boolean isAccountNonExpired() {
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.security.core.userdetails.UserDetails#isAccountNonLocked()
+	 */
+	public boolean isAccountNonLocked() {
+		return failedAttempts < 5;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.security.core.userdetails.UserDetails#isCredentialsNonExpired()
+	 */
+	public boolean isCredentialsNonExpired() {
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.security.core.userdetails.UserDetails#isEnabled()
+	 */
+	public boolean isEnabled() {
 		return true;
 	}
 }

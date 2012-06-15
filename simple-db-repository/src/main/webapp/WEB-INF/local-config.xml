@@ -19,7 +19,7 @@
 		<property name="attemptLimit" value="3" />
 		<property name="base" value="http://localhost:8080/" />
 		<property name="defaultAdminUserEmail" value="drand@mitre.org" />
-		<property name="defaultAdminUserName" value="drand" />
+		<property name="defaultAdminUserName" value="admin" />
 		<property name="mailer" ref="sender" />
 		<property name="passwordRule">
 			<bean class="org.mitre.openid.connect.repository.db.impl.SimplePasswordRule" />

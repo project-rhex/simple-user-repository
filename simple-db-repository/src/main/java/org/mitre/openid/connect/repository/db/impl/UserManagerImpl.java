@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.naming.AuthenticationException;
 import javax.persistence.EntityManager;
@@ -56,7 +57,9 @@ import org.mitre.openid.connect.repository.db.model.User;
 import org.mitre.openid.connect.repository.db.model.UserAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailSender;
+import org.springframework.security.authentication.encoding.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,6 +74,9 @@ public class UserManagerImpl implements UserManager {
 	private static final Logger logger = LoggerFactory
 			.getLogger(UserManagerImpl.class);
 
+	@Autowired
+	private PasswordEncoder simplePasswordEncoder;
+	
 	@PersistenceContext
 	private EntityManager em;
 	
@@ -114,11 +120,15 @@ public class UserManagerImpl implements UserManager {
 	 */
 	private URL base = null; 
 	
+	private AtomicBoolean initialized = new AtomicBoolean(false);
+	
 	/**
 	 * If the repository has no users that are administrators, create one based
 	 * on the configuration. Also, create the admin role if it doesn't exist.
 	 */
 	public void testAndInitialize() {
+		if (initialized.get()) return;
+		initialized.set(true);
 		@SuppressWarnings("unchecked")
 		Role admin = findRole("ADMIN");
 		// Find admin users only
@@ -522,33 +532,15 @@ public class UserManagerImpl implements UserManager {
 		
 		return confirmationString;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.impl.UserManager#salt(int, java.lang.String)
+	
+	/**
+	 * Bridge to password encoder
+	 * @return
 	 */
-	public String salt(int saltValue, String password)
-			throws NoSuchAlgorithmException, IOException {
-		if (password == null || password.trim().length() == 0) {
-			throw new IllegalArgumentException(
-					"password should never be null or empty");
-		}
-		byte[] pdata = password.getBytes("UTF8");
-		byte[] cdata = new byte[4];
-		cdata[0] = (byte) (saltValue & 0x000000FF);
-		cdata[1] = (byte) ((saltValue & 0x0000FF00) >> 8);
-		cdata[2] = (byte) ((saltValue & 0x00FF0000) >> 16);
-		cdata[3] = (byte) ((saltValue & 0xFF000000) >> 24);
-		MessageDigest digest = MessageDigest.getInstance("SHA-256");
-		digest.update(cdata);
-		byte thedigest[] = digest.digest(pdata);
-		StringBuilder rval = new StringBuilder(thedigest.length * 2);
-		for (int i = 0; i < thedigest.length; i++) {
-			String part = String.format("%02x", thedigest[i]);
-			rval.append(part);
-		}
-		return rval.toString();
+	private String salt(Integer saltValue, String password) {
+		return simplePasswordEncoder.encodePassword(password, saltValue);
 	}
-
+ 
 	/**
 	 * @return the passwordRule
 	 */

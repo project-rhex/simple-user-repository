@@ -177,21 +177,6 @@ public interface UserManager {
 	String reset(String username) throws UserException, AuthenticationException;
 
 	/**
-	 * Salt the given value in preparation for saving in the database. The salt
-	 * value and the "password", which is any plain text to be hashed, is placed
-	 * in a byte array and then run through a hashing algorithm (SHA1). While
-	 * SHA1 is not
-	 * 
-	 * @param saltValue
-	 * @param password
-	 * @return
-	 * @throws NoSuchAlgorithmException
-	 * @throws IOException
-	 */
-	String salt(int saltValue, String password)
-			throws NoSuchAlgorithmException, IOException;
-
-	/**
 	 * @return the base url for the login system that was set as part of the
 	 *         user manager initialization. This allows relative links to be
 	 *         calculated, never <code>null</code>.

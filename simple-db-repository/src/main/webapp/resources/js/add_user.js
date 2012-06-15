@@ -1,4 +1,8 @@
 usr = {
+  User: Backbone.Model.extend({
+	  urlRoot: "users/",
+  }),
+		
   init:	function(base_path) {
 	  sdb_webapp_base = base_path;
   },
@@ -45,7 +49,7 @@ usr = {
   },
   
   nav_to_user_list: function() {
-	  window.location.href = sdb_webapp_base + "/users/manageUsers";
+	  window.location.href = "./users/manageUsers";
   },
   
   process_input: function(index, element) {
@@ -58,7 +62,7 @@ usr = {
   }
 }
 
-usr.User = Backbone.Model.extend({
-  urlRoot: "users/",
+$(document).ready(function() {
+	usr.init("${base}");
+	usr.populate();
 });
-

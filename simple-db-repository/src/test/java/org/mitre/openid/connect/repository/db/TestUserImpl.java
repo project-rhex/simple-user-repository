@@ -80,19 +80,6 @@ public class TestUserImpl {
 		assertEquals(5, usermanager.count()); // Remember the built in admin user
 	}
 	
-	@Test public void testSalting() throws Exception {
-		String val1 = usermanager.salt(0x10020110, "Fido1234$");
-		String val2 = usermanager.salt(0x1A345510, "Fido1234$");
-		String val3 = usermanager.salt(0x10020110, "Fido1234$");
-		String val4 = usermanager.salt(0x10020110, "badpassword");
-		assertNotNull(val1);
-		assertNotNull(val2);
-		assertTrue(val1.length() > 20);
-		assertNotSame(val1, val2);
-		assertEquals(val1, val3);
-		assertNotSame(val3, val4);
-	}
-	
 	@Test public void testAdminUserIsCreated() throws Exception {
 		User u = usermanager.get("drand");
 		assertNotNull(u);

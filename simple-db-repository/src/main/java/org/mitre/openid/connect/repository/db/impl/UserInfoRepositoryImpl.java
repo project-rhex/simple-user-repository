@@ -1,7 +1,6 @@
 package org.mitre.openid.connect.repository.db.impl;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,7 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
@@ -28,19 +26,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.authentication.encoding.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 @Repository
 @Primary
+/**
+ * Note that user id in the userinfo is the user name in the database, not the database primary key or id.
+ * Be careful!
+ * 
+ * @author DRAND
+ *
+ */
 public class UserInfoRepositoryImpl implements UserInfoRepository {
 	private static final Logger logger = LoggerFactory
 			.getLogger(UserInfoRepositoryImpl.class);
 	
 	@Autowired
 	private UserManager userManager;
-	
+	@Autowired
+	private PasswordEncoder simplePasswordEncoder;
+	private SecureRandom random = new SecureRandom();
 	@PersistenceContext
 	private EntityManager em;
 
@@ -77,13 +85,10 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
 		if (user == null) {
 			user = new User();
 			user.setUsername(userId);
-			try {
-				user.createPassword(Long.toHexString(RandomUtils.nextLong()), userManager);
-			} catch (IOException e) {
-				logger.error("Problem setting up user password in userinfo save", e);
-			} catch (NoSuchAlgorithmException e) {
-				logger.error("Problem setting up user password in userinfo save", e);
-			}
+			Long password = RandomUtils.nextLong();
+			Integer salt = random.nextInt();
+			user.setPasswordHash(simplePasswordEncoder.encodePassword(password.toString(), salt));
+			user.setPasswordSalt(salt);
 		}
 		/**
 		 * Set user information from userInfo
@@ -116,6 +121,8 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
 			PropertiedUserInfo pui = (PropertiedUserInfo) userInfo;
 			for(String key : pui.keySet()) {
 				String value = pui.getProperty(key);
+				// Skip any extended property that starts with _, indicates something internal like _USER_ID
+				if (key.charAt(0) == '_') continue;
 				addUserAttribute(user, key, value);
 			}
 		}
@@ -190,7 +197,7 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
 		amap.remove(StandardAttributes.PROFILE.name());
 		info.setUpdatedTime(amap.get(StandardAttributes.UPDATED_TIME.name()));
 		amap.remove(StandardAttributes.UPDATED_TIME.name());
-		info.setUserId(user.getId().toString());
+		info.setUserId(user.getUsername());
 		info.setVerified(user.getEmailConfirmed());
 		info.setWebsite(amap.get(StandardAttributes.WEBSITE.name()));
 		amap.remove(StandardAttributes.WEBSITE.name());
@@ -227,6 +234,7 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
 			String value = amap.get(key);
 			info.setProperty(key, value);
 		}
+		info.setProperty("_USER_ID", user.getId().toString());
 		
 		return info;
 	}
