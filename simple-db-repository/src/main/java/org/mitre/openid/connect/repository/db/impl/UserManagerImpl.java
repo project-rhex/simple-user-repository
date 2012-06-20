@@ -147,6 +147,8 @@ public class UserManagerImpl implements UserManager {
 			try {
 				String randomHash = salt(randomSalt, initialpw);
 				defaultAdminUser.setPasswordHash(randomHash);
+                //System.out.println("GG4");
+                defaultAdminUser.setJamesPasswordHash(defaultAdminUser.encodeJamesPasswordHash(initialpw));
 				defaultAdminUser.setPasswordSalt(randomSalt);
 				defaultAdminUser.getRoles().add(admin);
 				em.persist(defaultAdminUser);
@@ -350,6 +352,9 @@ public class UserManagerImpl implements UserManager {
 
 		User newUser = new User();
 		newUser.setUsername(username);
+        //System.out.println("GG5");
+        newUser.setJamesPasswordHash(newUser.encodeJamesPasswordHash(password));
+
 		int psalt = random.nextInt();
 		try {
 			String phash = salt(psalt, password);
@@ -430,6 +435,8 @@ public class UserManagerImpl implements UserManager {
 		try {
 			String phash = salt(psalt, newpassword);
 			user.setPasswordHash(phash);
+            //System.out.println("GG3");
+            user.setJamesPasswordHash(user.encodeJamesPasswordHash(newpassword));
 			user.setPasswordSalt(psalt);
 			user.setConfirmationHash(null); // Assume that the user may have done a reset
 			em.persist(user);
@@ -653,4 +660,6 @@ public class UserManagerImpl implements UserManager {
 		}
 		this.userValidity = userValidity;
 	}
+
+
 }

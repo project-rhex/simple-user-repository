@@ -10,6 +10,7 @@ create table USERS (
     CONFIRMED tinyint,
     FAILED_ATTEMPTS smallint,
     PASSWORD_HASH varchar(128) not null,
+    JAMES_PASSWORD_HASH varchar(128) not null,
     PASSWORD_SALT int,
     USERNAME varchar(48) not null unique,
     UPDATED datetime,
@@ -54,3 +55,27 @@ alter table USER_ATTRIBUTES
 	add constraint FK_USER_ATTRIBUTES
 	foreign key (USER_ID)
 	references USERS(USER_ID);
+
+delimiter $$
+CREATE TRIGGER USERS_INS_Trigger AFTER insert ON USERS
+  FOR EACH ROW
+    BEGIN
+        insert into james_mail_userdb.users (username, pwdHash, pwdAlgorithm, useForwarding, forwardDestination, useAlias, alias) values (NEW.username, NEW.JAMES_PASSWORD_HASH, "SHA", 0, NULL, 0, NULL);
+    END$$
+delimiter ;
+
+delimiter $$
+CREATE TRIGGER USERS_UPD_Trigger AFTER update ON USERS
+  FOR EACH ROW
+    BEGIN
+        update james_mail_userdb.users set pwdHash = NEW.JAMES_PASSWORD_HASH where username = NEW.username;
+    END$$
+delimiter ;
+
+delimiter $$
+CREATE TRIGGER USERS_DEL_Trigger BEFORE delete ON USERS
+  FOR EACH ROW
+    BEGIN
+        delete from james_mail_userdb.users where username = OLD.username;
+    END$$
+delimiter ;
