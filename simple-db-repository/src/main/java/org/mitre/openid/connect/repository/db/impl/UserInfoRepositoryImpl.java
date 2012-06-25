@@ -88,6 +88,8 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
 			Long password = RandomUtils.nextLong();
 			Integer salt = random.nextInt();
 			user.setPasswordHash(simplePasswordEncoder.encodePassword(password.toString(), salt));
+            //System.out.println("GG2");
+            user.setJamesPasswordHash(user.encodeJamesPasswordHash(password.toString()));
 			user.setPasswordSalt(salt);
 		}
 		/**

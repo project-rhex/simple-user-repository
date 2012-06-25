@@ -198,6 +198,8 @@ public class UserController {
             String password = obj.getAsJsonObject().get("password").getAsString();
             Integer salt = random.nextInt();
             postedUser.setPasswordHash(simplePasswordEncoder.encodePassword(password, salt));
+            //System.out.println("GG1");
+            postedUser.setJamesPasswordHash(postedUser.encodeJamesPasswordHash(password));
             postedUser.setPasswordSalt(salt);
         }
         // Grab other attributes - the json is not really a User serialization
