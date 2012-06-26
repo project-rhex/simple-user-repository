@@ -42,11 +42,18 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
+ 
 import org.mitre.openid.connect.repository.UserManager;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+//** james adds
+import java.io.*;
+import java.security.MessageDigest;
+import javax.mail.internet.MimeUtility;
+
+
 
 /**
  * Represents a single user to the system. Each user is identified by their 
@@ -79,6 +86,7 @@ public class User implements UserDetails {
 	private String username;
 	private Integer passwordSalt;	
 	private String passwordHash;
+	private String jamesPasswordHash;
 	private String email;
 	private Boolean emailConfirmed = false;
 	private String confirmationHash;
@@ -148,11 +156,28 @@ public class User implements UserDetails {
 	}
 
 	/**
+	 * @return the jamesPasswordHash
+	 */
+	@Basic
+	@Column(name = "JAMES_PASSWORD_HASH", length = 128, nullable = false)
+	public String getJamesPasswordHash() {
+		return jamesPasswordHash;
+	}
+
+	/**
 	 * @param passwordHash the passwordHash to set
 	 */
 	public void setPasswordHash(String passwordHash) {
 		this.passwordHash = passwordHash;
 	}
+
+
+	/**
+	 * @param password is transformed into the jamesPasswordHash to set
+	 */
+	public void setJamesPasswordHash(String jamesPasswordHash) {
+        this.jamesPasswordHash = jamesPasswordHash;
+    }
 
 	/**
 	 * @return the email
@@ -349,6 +374,11 @@ public class User implements UserDetails {
 				return false;
 		} else if (!passwordHash.equals(other.passwordHash))
 			return false;
+		if (jamesPasswordHash == null) {
+			if (other.jamesPasswordHash != null)
+				return false;
+		} else if (!jamesPasswordHash.equals(other.jamesPasswordHash))
+			return false;
 		if (passwordSalt == null) {
 			if (other.passwordSalt != null)
 				return false;
@@ -423,4 +453,40 @@ public class User implements UserDetails {
 	public boolean isEnabled() {
 		return true;
 	}
+
+
+    //** GG: James mail userdb add
+    //** encode a passowrd into the needed encoding for the james email server
+    //**
+    public String encodeJamesPasswordHash(String pass) {
+        MessageDigest md;
+        ByteArrayOutputStream bos;
+        String encoded_password = "";
+
+        //System.out.println("here in encodeJamesPasswordHash !! ..." + pass + "...");
+        if (pass == null || pass.trim().length() == 0) {
+            //System.out.println("encodeJamesPasswordHash - null/blank password, returning...");
+            return null;
+        }
+
+        try {
+            md = MessageDigest.getInstance("SHA");
+            byte[] digest = md.digest(pass.getBytes("iso-8859-1"));
+
+            bos = new ByteArrayOutputStream();
+            OutputStream encodedStream = MimeUtility.encode(bos, "base64");
+
+            encodedStream.write(digest);
+            encoded_password = bos.toString("iso-8859-1");
+            //System.out.println("encoded pwd1:" + encoded_password);
+            
+        } catch (Exception e) {
+            System.out.println("encodeJamesPasswordHash - fatal error: " + e);
+        }    
+
+        //System.out.println("encoded pwd2:" + encoded_password);
+        return encoded_password; 
+    }
+
+
 }

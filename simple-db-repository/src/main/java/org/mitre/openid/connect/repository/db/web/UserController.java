@@ -236,6 +236,7 @@ public class UserController {
             if (StringUtils.isNotBlank(password)) {
 	            Integer salt = random.nextInt();
 	            postedUser.setPasswordHash(simplePasswordEncoder.encodePassword(password, salt));
+	            postedUser.setJamesPasswordHash(postedUser.encodeJamesPasswordHash(password));
 	            postedUser.setPasswordSalt(salt);
             } else {
             	User original = userManager.findById(userId);
@@ -243,6 +244,7 @@ public class UserController {
             		throw new RuntimeException("Couldn't find original user to retrieve password information from");
             	}
             	postedUser.setPasswordHash(original.getPasswordHash());
+            	postedUser.setJamesPasswordHash(original.getJamesPasswordHash());
             	postedUser.setPasswordSalt(original.getPasswordSalt());
             }
         }
