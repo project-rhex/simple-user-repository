@@ -222,11 +222,17 @@ public class TestUserImpl {
 		assertEquals(t, c.getRoles().iterator().next());
 		
 		// Remove the test role
-		c.getRoles().remove(t);
+		c.getRoles().clear();
 		usermanager.save(c);
 		
 		c = usermanager.get("charlie");
 		assertTrue(c.getRoles().isEmpty());
+		
+		// Add a role back
+		c.getRoles().add(t);
+		usermanager.save(c);
+		c = usermanager.get("charlie");
+		assertTrue(c.getRoles().size() > 0);		
 	}
 	
 	@Test public void testUserAttributes() throws Exception {

@@ -221,7 +221,7 @@ public class User implements UserDetails {
 	/**
 	 * @return the roles
 	 */
-	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "USERS_ROLES",
 		joinColumns = {
 			@JoinColumn(name="USER_ID")

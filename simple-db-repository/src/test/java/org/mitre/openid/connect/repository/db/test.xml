@@ -35,6 +35,8 @@
        </property>
     </bean>
     
+    <bean id="spe" class="org.mitre.openid.connect.repository.db.impl.SimplePasswordEncoder" />
+    
     <!-- 
     <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
     	<property name="driverClass" value="${jdbc.driverClass}" />

@@ -18,16 +18,15 @@
  ***************************************************************************************/
 package org.mitre.openid.connect.repository.db.web;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
@@ -35,6 +34,7 @@ import org.mitre.openid.connect.model.UserInfo;
 import org.mitre.openid.connect.repository.SortBy;
 import org.mitre.openid.connect.repository.UserInfoRepository;
 import org.mitre.openid.connect.repository.UserManager;
+import org.mitre.openid.connect.repository.db.model.Role;
 import org.mitre.openid.connect.repository.db.model.User;
 import org.mitre.openid.connect.repository.db.model.UserAttribute;
 import org.mitre.openid.connect.repository.db.util.ParseRequestContext;
@@ -157,12 +157,49 @@ public class UserController {
 			mav.addObject("userid", "-1");
 		} else {
 			User user = userManager.findById(id);
+			UserInfo info = userinfo.getByUserId(user.getUsername());
 			mav.addObject("label", "Edit");
 			mav.addObject("userid", id.toString());
+			mav.addObject("first_name_field", info.getGivenName());
+			mav.addObject("last_name_field", info.getFamilyName());
+			mav.addObject("email_field", info.getEmail());
+			boolean clinician = false;
+			for(Role r : user.getRoles()) {
+				if ("clinician".equalsIgnoreCase(r.getName())) {
+					clinician = true; 
+					break;
+				}
+			}
+			mav.addObject("role_field", clinician ? "CLINICIAN" : "PATIENT");
+			// Copy other user attributes as _field values
+			Map<String,String> attrs = attrsToMap(user);
+			for(Map.Entry<String, String> entry : attrs.entrySet()) {
+				mav.addObject(entry.getKey(), entry.getValue());
+			}
 		}
 		return mav;
 	}
 	
+	/**
+	 * Convert the user attributes in the user object into an attribute - value map
+	 * of the keys and value pairs.
+	 * @param user the user object, assumed not <code>null</code>
+	 * @return the map of keys and values, e.g. title_field: foo. Note that the keys 
+	 * will have the string "_field" appended unless they already end in "_field" 
+	 */
+	private Map<String, String> attrsToMap(User user) {
+		Map<String, String> rval = new HashMap<String, String>();
+		for(UserAttribute attr : user.getAttributes()) {
+			if (attr.getType() == UserAttribute.REMOTE_TYPE) continue;
+			String key = attr.getName();
+			if (! key.endsWith("_field")) {
+				key = key.toLowerCase() + "_field";
+			}
+			rval.put(key, attr.getValue());
+		}
+		return rval;
+	}
+
 	@RequestMapping(value = "/{userid}", method = RequestMethod.DELETE)
 	public HttpEntity<String> deleteUser(@PathVariable Long userid) {
 		userManager.delete(userid);
@@ -196,15 +233,33 @@ public class UserController {
         postedUser = gson.fromJson(obj, User.class);
         if (obj.isJsonObject()) {
             String password = obj.getAsJsonObject().get("password").getAsString();
-            Integer salt = random.nextInt();
-            postedUser.setPasswordHash(simplePasswordEncoder.encodePassword(password, salt));
-            postedUser.setPasswordSalt(salt);
+            if (StringUtils.isNotBlank(password)) {
+	            Integer salt = random.nextInt();
+	            postedUser.setPasswordHash(simplePasswordEncoder.encodePassword(password, salt));
+	            postedUser.setPasswordSalt(salt);
+            } else {
+            	User original = userManager.findById(userId);
+            	if (original == null) {
+            		throw new RuntimeException("Couldn't find original user to retrieve password information from");
+            	}
+            	postedUser.setPasswordHash(original.getPasswordHash());
+            	postedUser.setPasswordSalt(original.getPasswordSalt());
+            }
         }
         // Grab other attributes - the json is not really a User serialization
+        boolean patient = false, clinician = false;
         for(Entry<String, JsonElement> entry : ((JsonObject) obj).entrySet()) {
         	String key = entry.getKey();
         	JsonElement value = entry.getValue();
         	if (key.startsWith("password") || "email".equals(key)) continue;
+        	if (key.equals("patient")) {
+        		patient = true;
+        		continue;
+        	}
+        	if (key.equals("clinician")) {
+        		clinician = true;
+        		continue;
+        	}
         	if (postedUser.getAttributes() == null) {
         		postedUser.setAttributes(new HashSet<UserAttribute>());
         	}
@@ -215,6 +270,15 @@ public class UserController {
         if (userId != null) { 
             postedUser.setId(userId);
         }
+        
+        // Clear and add new roles
+        postedUser.getRoles().clear();
+        if (clinician = true) {
+        	postedUser.getRoles().add(userManager.findRole("CLINICIAN"));
+        } else {
+        	postedUser.getRoles().add(userManager.findRole("PATIENT"));
+        }
+        
         userManager.save(postedUser);
 	}
 	
