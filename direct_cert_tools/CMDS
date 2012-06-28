@@ -1,0 +1,8 @@
+javac -classpath .:./lib/* DirectUserCertCreate.java
+
+rm fsmith*; java -classpath .:./lib/* DirectUserCertCreate direct.rhex.usAnchorPublic.der direct.rhex.usKey.der mitre1 'Fred Smith' fsmith@direct.rhex.us
+
+select * from userdb.USERS;
+select * from james_mail_userdb.users;
+select * from nhind.address;
+

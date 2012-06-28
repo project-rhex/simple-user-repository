@@ -90,6 +90,10 @@ public class UserManagerImpl implements UserManager {
 	 */
 	private String defaultAdminUserEmail = null;
 	/**
+	 * Default password for the admin user
+	 */
+	private String defaultAdminUserPassword = "PassWord";
+	/**
 	 * Rule that decides if a password is acceptable to the system. 
 	 */
 	private IPasswordRule passwordRule = null;
@@ -142,7 +146,7 @@ public class UserManagerImpl implements UserManager {
 			User defaultAdminUser = new User();
 			defaultAdminUser.setUsername(defaultAdminUserName);
 			defaultAdminUser.setEmail(defaultAdminUserEmail);
-			String initialpw = "PassWord";
+			String initialpw = defaultAdminUserPassword;
 			int randomSalt = random.nextInt();
 			try {
 				String randomHash = salt(randomSalt, initialpw);
@@ -641,6 +645,14 @@ public class UserManagerImpl implements UserManager {
 	 */
 	public void setDefaultAdminUserEmail(String defaultAdminUserEmail) {
 		this.defaultAdminUserEmail = defaultAdminUserEmail;
+	}
+
+	public String getDefaultAdminUserPassword() {
+		return defaultAdminUserPassword;
+	}
+
+	public void setDefaultAdminUserPassword(String defaultAdminUserPassword) {
+		this.defaultAdminUserPassword = defaultAdminUserPassword;
 	}
 
 	/**
