@@ -253,7 +253,7 @@ public class TestUserImpl {
 		// Remove an attribute
 		UserAttribute found = null;
 		for(UserAttribute attr : meghan.getAttributes()) {
-			if ("b".equals(attr.getName())) {
+			if ("B".equals(attr.getName())) {
 				found = attr;
 			}
 		}
@@ -268,7 +268,7 @@ public class TestUserImpl {
 		// Load just one attribute
 		UserAttribute attr = attrs.iterator().next();
 		assertNotNull(attr);
-		assertEquals("a", attr.getName());
+		assertEquals("A", attr.getName());
 		assertEquals("foo", attr.getValue());
 	}
 	

@@ -124,6 +124,33 @@ public class TestUserInfoRepository {
 	
 	@Test
 	public void testGetAll() throws Exception {
+		PropertiedUserInfo userInfo = new PropertiedUserInfo();
+		Address addr = new Address();
+		addr.setLocality("Chelmsford");
+		addr.setRegion("Massachusetts");
+		addr.setPostalCode("01824");
+		addr.setStreetAddress("126 Penny Lane");
+		addr.setFormatted("126 Penny Ln, Chelmsford, MA 01824");
+		addr.setCountry("USA");
+		
+		userInfo.setUserId("ajones");
+		userInfo.setAddress(addr);
+		userInfo.setEmail("ajones@aol.com");
+		userInfo.setGender("F");
+		userInfo.setFamilyName("Jones");
+		userInfo.setGivenName("Alice");
+		userInfo.setLocale("en-US");
+		userInfo.setMiddleName("Dawn");
+		userInfo.setName("Alice Jones");
+		userInfo.setNickname("Ali");
+		userInfo.setPhoneNumber("978 256 1111");
+		userInfo.setPicture("http://www.flicker.com/123456.png");
+		userInfo.setProfile("http://www.facebook.com/mesmith");
+		userInfo.setWebsite("http://www.linkedin.com/mesmith");
+		userInfo.setProperty("AGE", "23");
+		userInfo.setZoneinfo("zone1");
+		userinforepo.save((DefaultUserInfo) userInfo );		
+		
 		Collection<? extends UserInfo> results = userinforepo.getAll();
 		assertNotNull(results);
 		assertTrue(results.size() > 1);
