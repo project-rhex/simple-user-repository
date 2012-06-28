@@ -9,7 +9,7 @@
     	<class>org.mitre.openid.connect.repository.db.model.Role</class>
     	<class>org.mitre.openid.connect.repository.db.model.UserAttribute</class>
         <properties>
-         	<property name="eclipselink.logging.file" value="c:/temp/jpaoutput.log"/>
+         	<property name="eclipselink.logging.file" value="jpaoutput.log"/>
          	<property name="eclipselink.logging.level" value="FINE"/>
         </properties>
     </persistence-unit>
