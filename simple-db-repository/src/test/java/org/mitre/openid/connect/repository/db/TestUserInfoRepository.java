@@ -42,7 +42,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/org/mitre/openid/connect/repository/db/test.xml" })
+@ContextConfiguration(locations = { "classpath:/org/mitre/openid/connect/repository/db/test.xml" })
 public class TestUserInfoRepository {	
 	@Resource
 	private UserInfoRepository userinforepo;
