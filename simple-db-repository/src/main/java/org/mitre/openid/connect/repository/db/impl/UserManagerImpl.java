@@ -124,41 +124,42 @@ public class UserManagerImpl implements UserManager {
 	 */
 	private URL base = null; 
 	
-	private AtomicBoolean initialized = new AtomicBoolean(false);
-	
 	/**
 	 * If the repository has no users that are administrators, create one based
 	 * on the configuration. Also, create the admin role if it doesn't exist.
 	 */
 	public void testAndInitialize() {
-		if (initialized.get()) return;
-		initialized.set(true);
-		@SuppressWarnings("unchecked")
-		Role admin = findRole("ADMIN");
-		// Find admin users only
-		TypedQuery<User> uq = (TypedQuery<User>) em.createNamedQuery("users.by_admin_role"); 
-		List<User> users = uq.getResultList();
-		if (users.size() == 0) {
-			if (StringUtils.isBlank(defaultAdminUserName)) {
-				logger.warn("Cannot create default user");
-				return;
-			}
-			User defaultAdminUser = new User();
-			defaultAdminUser.setUsername(defaultAdminUserName);
-			defaultAdminUser.setEmail(defaultAdminUserEmail);
-			String initialpw = defaultAdminUserPassword;
-			int randomSalt = random.nextInt();
-			try {
-				String randomHash = salt(randomSalt, initialpw);
-				defaultAdminUser.setPasswordHash(randomHash);
-                //System.out.println("GG4");
-                defaultAdminUser.setJamesPasswordHash(defaultAdminUser.encodeJamesPasswordHash(initialpw));
-				defaultAdminUser.setPasswordSalt(randomSalt);
-				defaultAdminUser.getRoles().add(admin);
-				em.persist(defaultAdminUser);
-			} catch (Exception e) {
-				logger.error("Something's wrong that shouldn't be wrong", e);
-			}
+        @SuppressWarnings("unchecked")
+        Role admin = findRole("ADMIN");
+        // Find admin users only
+        TypedQuery<User> uq = (TypedQuery<User>) em.createNamedQuery("users.by_admin_role");
+        List<User> users = uq.getResultList();
+        if (users.size() == 0) {
+            if (StringUtils.isBlank(defaultAdminUserName)) {
+                logger.warn("Cannot create default user");
+                return;
+            }
+
+            User defaultAdminUser = get(defaultAdminUserName);
+            if (defaultAdminUser == null) {
+                defaultAdminUser = new User();
+                defaultAdminUser.setUsername(defaultAdminUserName);
+                defaultAdminUser.setEmail(defaultAdminUserEmail);
+                String initialpw = defaultAdminUserPassword;
+                int randomSalt = random.nextInt();
+                try {
+                    String randomHash = salt(randomSalt, initialpw);
+                    defaultAdminUser.setPasswordHash(randomHash);
+                    // System.out.println("GG4");
+                    defaultAdminUser.setJamesPasswordHash(defaultAdminUser
+                            .encodeJamesPasswordHash(initialpw));
+                    defaultAdminUser.setPasswordSalt(randomSalt);
+                    defaultAdminUser.getRoles().add(admin);
+                    em.persist(defaultAdminUser);
+                } catch (Exception e) {
+                    logger.error("Something's wrong that shouldn't be wrong", e);
+                }
+            }
 		}
 		
 		if (userValidity == null) {

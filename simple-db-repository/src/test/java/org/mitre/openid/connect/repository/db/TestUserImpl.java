@@ -20,7 +20,6 @@ package org.mitre.openid.connect.repository.db;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -55,13 +54,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration(locations = { "file:src/test/java/org/mitre/openid/connect/repository/db/test.xml" })
 public class TestUserImpl {
 	@Resource UserManager usermanager;
-	
-	public static boolean setup = false;
-	
+
 	@Before
 	public void testSetup() throws Exception {
-		if (setup) return;
-		setup = true;
 		List<User> users = usermanager.find("%");
 		for(User user : users) {
 			usermanager.delete(user.getUsername());
