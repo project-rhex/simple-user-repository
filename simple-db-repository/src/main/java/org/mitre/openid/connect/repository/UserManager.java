@@ -18,15 +18,12 @@
  ***************************************************************************************/
 package org.mitre.openid.connect.repository;
 
-import java.io.IOException;
 import java.net.URL;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
 
 import javax.naming.AuthenticationException;
 
-import org.mitre.openid.connect.repository.UserInfoRepository;
 import org.mitre.openid.connect.repository.db.LockedUserException;
 import org.mitre.openid.connect.repository.db.PasswordException;
 import org.mitre.openid.connect.repository.db.UserException;
