@@ -52,7 +52,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author DRAND
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:/org/mitre/openid/connect/repository/db/test.xml" })
+@ContextConfiguration(locations = { "file:src/test/java/org/mitre/openid/connect/repository/db/test.xml" })
 public class TestUserImpl {
 	@Resource UserManager usermanager;
 	
