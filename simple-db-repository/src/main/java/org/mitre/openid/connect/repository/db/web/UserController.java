@@ -276,9 +276,9 @@ public class UserController {
         // Clear and add new roles
         postedUser.getRoles().clear();
         if (clinician = true) {
-        	postedUser.getRoles().add(userManager.findRole("CLINICIAN"));
+        	postedUser.getRoles().add(userManager.findOrCreateRole("CLINICIAN"));
         } else {
-        	postedUser.getRoles().add(userManager.findRole("PATIENT"));
+        	postedUser.getRoles().add(userManager.findOrCreateRole("PATIENT"));
         }
         
         userManager.save(postedUser);

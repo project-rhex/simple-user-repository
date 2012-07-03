@@ -200,7 +200,7 @@ public class UserManagerImpl implements UserManager {
 			throw new IllegalArgumentException(
 					"rolename should never be null or empty");
 		}
-		Role existing = findRole(rolename);
+		Role existing = findOrCreateRole(rolename);
 		if (existing != null) {
 			em.remove(existing);
 		} else {
@@ -260,26 +260,22 @@ public class UserManagerImpl implements UserManager {
 		return rval;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.UserManager#find(java.lang.String)
-	 */
-	public Role findRole(String rolename) {
-		if (rolename == null || rolename.trim().length() == 0) {
-			throw new IllegalArgumentException(
-					"rolename should never be null or empty");
-		}
-		@SuppressWarnings("unchecked")
-		TypedQuery<Role> rq = (TypedQuery<Role>) em.createNamedQuery("roles.by_name");
-		List<Role> found = rq.setParameter("name", rolename).getResultList();
-		if (found.size() == 0) {
-			Role role = new Role();
-			role.setName(rolename);
-			em.persist(role);
-			return role;
-		} else {
-			return found.get(0);
-		}
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.mitre.itflogin.UserManager#find(java.lang.String)
+     */
+    public Role findOrCreateRole(String rolename) {
+        Role role = findRole(rolename);
+        if (role == null) {
+            role = new Role();
+            role.setName(rolename);
+            em.persist(role);
+
+        }
+
+        return role;
+    }
 
 	/* (non-Javadoc)
 	 * @see org.mitre.itflogin.impl.UserManager#add(java.lang.String, java.lang.String)
@@ -618,5 +614,19 @@ public class UserManagerImpl implements UserManager {
 		this.userValidity = userValidity;
 	}
 
-
+    @Override
+    public Role findRole(String rolename) {
+        if (rolename == null || rolename.trim().length() == 0) {
+            throw new IllegalArgumentException(
+                    "rolename should never be null or empty");
+        }
+        @SuppressWarnings("unchecked")
+        TypedQuery<Role> rq = (TypedQuery<Role>) em.createNamedQuery("roles.by_name");
+        List<Role> found = rq.setParameter("name", rolename).getResultList();
+        if (found.size() == 0) {
+            return null;
+        } else {
+            return found.get(0);
+        }
+    }
 }

@@ -163,7 +163,7 @@ public class TestUserImpl {
 	@Test public void testResetAndConfirmation() throws Exception {
 		usermanager.add("joex", "xyZZ12##");
 		User j = usermanager.get("joex");
-		Role g = usermanager.findRole("GUEST");
+		Role g = usermanager.findOrCreateRole("GUEST");
 		j.getRoles().add(g);
 		j.setEmail("drand@mitre.org");
 		j.setEmailConfirmed(true);
@@ -196,7 +196,7 @@ public class TestUserImpl {
 	@Test public void testRoleMembership() throws Exception {
 		usermanager.add("charlie", "xaBC95(#");
 		User c = usermanager.get("charlie");
-		Role g = usermanager.findRole("GUEST");
+		Role g = usermanager.findOrCreateRole("GUEST");
 		c.getRoles().add(g);
 		usermanager.save(c);
 		
@@ -206,8 +206,8 @@ public class TestUserImpl {
 		assertEquals(g, c.getRoles().iterator().next());
 		
 		// Add another role, remove original role
-		Role t = usermanager.findRole("TEST");
-		c.getRoles().add(usermanager.findRole("TEST"));
+		Role t = usermanager.findOrCreateRole("TEST");
+		c.getRoles().add(usermanager.findOrCreateRole("TEST"));
 		c.getRoles().remove(g);
 		usermanager.save(c);
 		

@@ -93,6 +93,17 @@ public interface UserManager {
     void deleteRole(String rolename);
 
     /**
+     * Find role by name. May be used to find roles in order to add
+     * roles to a user.
+     * 
+     * @param rolename
+     *            the role, never <code>null</code> or empty
+     * @return the role, or <code>null</code> if not found
+     */
+    Role findRole(String rolename);
+
+    
+    /**
      * Find or create role by name. May be used to find roles in order to add
      * roles to a user.
      * 
@@ -100,7 +111,7 @@ public interface UserManager {
      *            the role, never <code>null</code> or empty
      * @return the role, never <code>null</code>
      */
-    Role findRole(String rolename);
+    Role findOrCreateRole(String rolename);
 
     /**
      * Add the user to the database with the given password
