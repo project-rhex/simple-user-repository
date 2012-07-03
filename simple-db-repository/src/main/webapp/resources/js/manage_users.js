@@ -61,7 +61,8 @@ users.UserList = Backbone.Collection.extend({
 users.UserView = Backbone.View.extend({
 	tagName: 'tr',
 	template: _.template('<td><%= userId %></td><td><a href="./users/editUser/<%= extendedProperties._USER_ID %>' +
-	'"><%= givenName %></a></td><td><%= familyName %></td><td><%= extendedProperties.TITLE %></td><td><%= email %></td>' +
+	'"><%= givenName %>&nbsp;<img height="20" width="20" src="./resources/images/edit.png"></a></td>' +
+	'<td><%= familyName %></td><td><%= extendedProperties.TITLE %></td><td><%= email %></td>' +
 	'<td>unknown</td><td><a href="#" data-user-id="<%= extendedProperties._USER_ID %>">' +
 	'<img height="20" width="20" src="./resources/images/delete.png"></a></td>' ),
 	render: function(){

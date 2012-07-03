@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1" import="org.mitre.openid.connect.repository.db.util.*,java.util.*" %>
+    pageEncoding="ISO-8859-1" import="org.mitre.openid.connect.repository.db.util.*,java.util.*,org.apache.commons.lang.*" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="o" tagdir="/WEB-INF/tags" %> 
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
@@ -66,6 +66,33 @@
    <option value="CLINICIAN" <c:if test="${role_field == 'CLINICIAN'}">selected</c:if> >Clinician</option>
 </select>
 </div>
+<div class="row">
+<label class="span2" for="admin_role_field">Is Admin</label>
+<input type="checkbox" id="admin_role_field" <c:if test="${is_admin}">checked</c:if> >
+</div>
+<div class="row">
+<span class="span2">&nbsp;</span>
+<input id="addProperty" class="span2" type="button" value="Add Property" title="Add Property">
+</div>
+<div id="property_marker" class="row">
+</div>
+<c:forEach var="prop" items="${properties}">
+<c:set var="pval" value="${propertymap[prop]}"/>
+<div class="row">
+<% 
+String prop = (String) pageContext.getAttribute("prop"); 
+prop = prop.substring(0,prop.length() - 6);
+%>
+<label class="span2" for="${prop}_field"><%= StringUtils.capitalize(prop.replace("_"," ")) %></label>
+<input id="${prop}_field" class="span4" size="40" value="${pval}">
+</div>
+</c:forEach>
+<script type="text/javascript">
+$(document).ready(function() {
+<c:forEach var="prop" items="${properties}">
+	usr.properties[usr.properties.length] = '${prop}';
+</c:forEach>
+</script>
 <div class="row">
 <span class="span1">&nbsp;</span>
 <input id="add" class="span2" type='button' value="${applyLabel}" title="${applyLabel}">

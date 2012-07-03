@@ -20,12 +20,15 @@ package org.mitre.openid.connect.repository.db.web;
 
 import java.net.MalformedURLException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -164,18 +167,25 @@ public class UserController {
 			mav.addObject("last_name_field", info.getFamilyName());
 			mav.addObject("email_field", info.getEmail());
 			boolean clinician = false;
+			boolean admin = false;
 			for(Role r : user.getRoles()) {
 				if ("clinician".equalsIgnoreCase(r.getName())) {
 					clinician = true; 
-					break;
+				} else if ("admin".equalsIgnoreCase(r.getName())) {
+					admin = true;
 				}
 			}
 			mav.addObject("role_field", clinician ? "CLINICIAN" : "PATIENT");
+			mav.addObject("is_admin", admin);
 			// Copy other user attributes as _field values
 			Map<String,String> attrs = attrsToMap(user);
-			for(Map.Entry<String, String> entry : attrs.entrySet()) {
-				mav.addObject(entry.getKey(), entry.getValue());
-			}
+			Set<String> keys = attrs.keySet();
+			keys.remove("title_field");
+			keys.remove("user-id_field");
+			keys.remove("first_name_field");
+			keys.remove("last_name_field");
+			mav.addObject("properties", keys);
+			mav.addObject("propertymap", attrs);
 		}
 		return mav;
 	}
@@ -250,7 +260,8 @@ public class UserController {
         }
         // Grab other attributes - the json is not really a User serialization
         boolean patient = false, clinician = false;
-        for(Entry<String, JsonElement> entry : ((JsonObject) obj).entrySet()) {
+        JsonObject data = (JsonObject) obj;
+        for(Entry<String, JsonElement> entry : data.entrySet()) {
         	String key = entry.getKey();
         	JsonElement value = entry.getValue();
         	if (key.startsWith("password") || "email".equals(key)) continue;
@@ -265,6 +276,8 @@ public class UserController {
         	if (postedUser.getAttributes() == null) {
         		postedUser.setAttributes(new HashSet<UserAttribute>());
         	}
+        	if (key.contains("role")) continue; // Skip roles
+        	if (StringUtils.isBlank(value.getAsString())) continue;
         	postedUser.getAttributes().add(new UserAttribute(key.toUpperCase(), value.getAsString()));
         }
         postedUser.setUsername(postedUser.getEmail());
@@ -279,6 +292,10 @@ public class UserController {
         	postedUser.getRoles().add(userManager.findRole("CLINICIAN"));
         } else {
         	postedUser.getRoles().add(userManager.findRole("PATIENT"));
+        }
+        JsonElement admin_role = data.get("admin_role");
+        if (admin_role != null) {
+        	postedUser.getRoles().add(userManager.findRole("ADMIN"));
         }
         
         userManager.save(postedUser);

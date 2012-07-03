@@ -11,6 +11,7 @@ usr = {
   populate: function() {
 	$("#cancel").click(usr.cancel);
 	$("#add").click(usr.add);
+	$("#addProperty").click(usr.addProperty);
   },
   
   add: function() {
@@ -56,6 +57,30 @@ usr = {
 	  }  
   },
   
+  addProperty: function() {
+	  var property = prompt("Enter the name of the property to add", "");
+	  if (property == null || property == "") {
+		  alert("Property can't be an empty string");
+		  return;
+	  }
+	  property = property.toLowerCase();
+	  property = property.replace(" ","_");
+	  
+	  for(var i = 0; i < usr.properties.length; i++) {
+		  if (property == usr.properties[i]) {
+			  alert("That property already exists");
+			  return;
+		  }
+	  }
+	  usr.properties[usr.properties.length] = property;
+	  plabel = property.replace("_", " ");
+	  plabel = plabel.substr(0,1).toUpperCase() + plabel.substr(1);
+	  pfield = property + "_field";
+	  
+	  $("#property_marker").after('<div class="row"><label class="span2" for=' + pfield + '">' + plabel 
+			  + '</label><input id="' + pfield + '" class="span4" size="40" value=""></div>');
+  },
+  
   cancel: function() {
 	  usr.nav_to_user_list();
   },
@@ -71,7 +96,9 @@ usr = {
 		  var field = id.substring(0, i);
 		  usr.results[field] = $(element).val();
 	  }
-  }
+  },
+  
+  properties: [ "title", "first_name", "last_name", "email", "password" ]
 }
 
 $(document).ready(function() {
