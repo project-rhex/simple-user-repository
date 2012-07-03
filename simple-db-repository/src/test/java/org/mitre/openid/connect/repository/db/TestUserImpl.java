@@ -55,17 +55,17 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class TestUserImpl {
 	@Resource UserManager usermanager;
 
-	@Before
-	public void testSetup() throws Exception {
-		List<User> users = usermanager.find("%");
-		for(User user : users) {
-			usermanager.delete(user.getUsername());
-		}
-		
-		usermanager.deleteRole("GUEST");
-		usermanager.deleteRole("ADMIN");
-		usermanager.testAndInitialize();
-	}
+    @Before
+    public void testSetup() throws Exception {
+        List<User> users = usermanager.find("%");
+        for (User user : users) {
+            if (!user.getUsername().equals("admin")) {
+                usermanager.delete(user.getUsername());
+            }
+        }
+
+        usermanager.deleteRole("GUEST");
+    }
 	
 	@Test public void testCount() throws Exception {
 		usermanager.add("jacob", "Fido1234$");
@@ -76,9 +76,9 @@ public class TestUserImpl {
 	}
 	
 	@Test public void testAdminUserIsCreated() throws Exception {
-		User u = usermanager.get("drand");
+		User u = usermanager.get("admin");
 		assertNotNull(u);
-		assertEquals("drand", u.getUsername());
+		assertEquals("admin", u.getUsername());
 		assertNotNull(u.getRoles());
 		assertTrue(u.getRoles().size() > 0);
 		assertEquals("ADMIN", u.getRoles().iterator().next().getName());

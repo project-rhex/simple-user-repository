@@ -53,18 +53,19 @@ public class TestUserInfoRepository {
 	public static boolean setup = false;
 	
 	@Before
-	public void testSetup() throws Exception {
-		if (setup) return;
-		setup = true;
-		List<User> users = usermanager.find("%");
-		for(User user : users) {
-			usermanager.delete(user.getUsername());
-		}
-		
-		usermanager.deleteRole("GUEST");
-		usermanager.deleteRole("ADMIN");
-		usermanager.testAndInitialize();
-	}
+    public void testSetup() throws Exception {
+        if (setup)
+            return;
+        setup = true;
+        List<User> users = usermanager.find("%");
+        for (User user : users) {
+            if (!user.getUsername().equals("admin")) {
+                usermanager.delete(user.getUsername());
+            }
+        }
+
+        usermanager.deleteRole("GUEST");
+    }
 	
 	@Test
 	public void testSaveAndGetByUserId() throws Exception {

@@ -16,7 +16,6 @@ public class SimpleUserDetailsServiceImpl implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username)
 			throws UsernameNotFoundException {
-		userManager.testAndInitialize();
 		
 		User user = userManager.get(username);
 		if (user == null) {

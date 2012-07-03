@@ -39,11 +39,6 @@ import org.mitre.openid.connect.repository.db.model.User;
  */
 public interface UserManager {
     /**
-     * Check the database and create any required users and roles.
-     */
-    void testAndInitialize();
-
-    /**
      * @return get the total count of users in the database
      */
     int count();

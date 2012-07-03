@@ -18,20 +18,14 @@
  ***************************************************************************************/
 package org.mitre.openid.connect.repository.db.impl;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.sql.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.naming.AuthenticationException;
 import javax.persistence.EntityManager;
@@ -40,12 +34,7 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.RandomUtils;
-import org.mitre.openid.connect.model.Address;
-import org.mitre.openid.connect.model.DefaultUserInfo;
-import org.mitre.openid.connect.model.UserInfo;
 import org.mitre.openid.connect.repository.SortBy;
-import org.mitre.openid.connect.repository.StandardAttributes;
 import org.mitre.openid.connect.repository.UserManager;
 import org.mitre.openid.connect.repository.db.IPasswordRule;
 import org.mitre.openid.connect.repository.db.IUserValidity;
@@ -100,7 +89,7 @@ public class UserManagerImpl implements UserManager {
 	/**
 	 * Rule that decides if a user is acceptable to the system
 	 */
-	private IUserValidity userValidity = null;
+	private IUserValidity userValidity = new SimpleUserValidity();
 	/**
 	 * Secure random number generator. Do not replace with the regular random
 	 * number generator. A pseudo random number generator will tend to produce
@@ -123,49 +112,6 @@ public class UserManagerImpl implements UserManager {
 	 * messages that contain links to these pages.
 	 */
 	private URL base = null; 
-	
-	/**
-	 * If the repository has no users that are administrators, create one based
-	 * on the configuration. Also, create the admin role if it doesn't exist.
-	 */
-	public void testAndInitialize() {
-        @SuppressWarnings("unchecked")
-        Role admin = findRole("ADMIN");
-        // Find admin users only
-        TypedQuery<User> uq = (TypedQuery<User>) em.createNamedQuery("users.by_admin_role");
-        List<User> users = uq.getResultList();
-        if (users.size() == 0) {
-            if (StringUtils.isBlank(defaultAdminUserName)) {
-                logger.warn("Cannot create default user");
-                return;
-            }
-
-            User defaultAdminUser = get(defaultAdminUserName);
-            if (defaultAdminUser == null) {
-                defaultAdminUser = new User();
-                defaultAdminUser.setUsername(defaultAdminUserName);
-                defaultAdminUser.setEmail(defaultAdminUserEmail);
-                String initialpw = defaultAdminUserPassword;
-                int randomSalt = random.nextInt();
-                try {
-                    String randomHash = salt(randomSalt, initialpw);
-                    defaultAdminUser.setPasswordHash(randomHash);
-                    // System.out.println("GG4");
-                    defaultAdminUser.setJamesPasswordHash(defaultAdminUser
-                            .encodeJamesPasswordHash(initialpw));
-                    defaultAdminUser.setPasswordSalt(randomSalt);
-                    defaultAdminUser.getRoles().add(admin);
-                    em.persist(defaultAdminUser);
-                } catch (Exception e) {
-                    logger.error("Something's wrong that shouldn't be wrong", e);
-                }
-            }
-		}
-		
-		if (userValidity == null) {
-			userValidity = new SimpleUserValidity();
-		}
-	}
 	
 	/*
 	 * (non-Javadoc)
