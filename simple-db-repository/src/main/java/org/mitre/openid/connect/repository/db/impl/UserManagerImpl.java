@@ -133,9 +133,6 @@ public class UserManagerImpl implements UserManager {
 		return em.find(User.class, id);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.impl.UserManager#get(java.lang.String)
-	 */
 	public User get(String username) {
 		if (username == null || username.trim().length() == 0) {
 			throw new IllegalArgumentException(
@@ -147,9 +144,6 @@ public class UserManagerImpl implements UserManager {
 		return results.size() > 0 ? results.get(0) : null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.UserManager#save(org.mitre.itflogin.model.User)
-	 */
 	public void save(User user) {
 		if (user == null) {
 			throw new IllegalArgumentException(
@@ -162,10 +156,6 @@ public class UserManagerImpl implements UserManager {
 			em.merge(user);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see org.mitre.itflogin.UserManager#delete(java.lang.String)
-	 */
 	public void delete(String username) {
 		if (username == null || username.trim().length() == 0) {
 			throw new IllegalArgumentException(
@@ -209,9 +199,6 @@ public class UserManagerImpl implements UserManager {
 		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.UserManager#find(java.lang.String)
-	 */
 	@SuppressWarnings("unchecked")
 	public List<User> find(String likePattern) {
 		if (likePattern == null || likePattern.trim().length() == 0) {
@@ -260,11 +247,6 @@ public class UserManagerImpl implements UserManager {
 		return rval;
 	}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.mitre.itflogin.UserManager#find(java.lang.String)
-     */
     public Role findOrCreateRole(String rolename) {
         Role role = findRole(rolename);
         if (role == null) {
@@ -277,9 +259,6 @@ public class UserManagerImpl implements UserManager {
         return role;
     }
 
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.impl.UserManager#add(java.lang.String, java.lang.String)
-	 */
 	public void add(String username, String password) throws PasswordException,
 			UserException {
 		if (username == null || username.trim().length() == 0) {
@@ -299,7 +278,6 @@ public class UserManagerImpl implements UserManager {
 
 		User newUser = new User();
 		newUser.setUsername(username);
-        //System.out.println("GG5");
         newUser.setJamesPasswordHash(newUser.encodeJamesPasswordHash(password));
 
 		int psalt = random.nextInt();
@@ -317,9 +295,6 @@ public class UserManagerImpl implements UserManager {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.impl.UserManager#checkConfirmation(java.lang.String, java.lang.String)
-	 */
 	public boolean checkConfirmation(String username, String confirmation) {
 		if (username == null || username.trim().length() == 0) {
 			throw new IllegalArgumentException(
@@ -349,9 +324,6 @@ public class UserManagerImpl implements UserManager {
 		}		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.impl.UserManager#modifyPassword(java.lang.String, java.lang.String)
-	 */
 	public void modifyPassword(String username, String newpassword) throws UserException, PasswordException {
 		if (username == null || username.trim().length() == 0) {
 			throw new IllegalArgumentException(
@@ -382,7 +354,6 @@ public class UserManagerImpl implements UserManager {
 		try {
 			String phash = salt(psalt, newpassword);
 			user.setPasswordHash(phash);
-            //System.out.println("GG3");
             user.setJamesPasswordHash(user.encodeJamesPasswordHash(newpassword));
 			user.setPasswordSalt(psalt);
 			user.setConfirmationHash(null); // Assume that the user may have done a reset
@@ -396,9 +367,6 @@ public class UserManagerImpl implements UserManager {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.impl.UserManager#unlock(java.lang.String)
-	 */
 	public void unlock(String username) throws AuthenticationException {
 		if (username == null || username.trim().length() == 0) {
 			throw new IllegalArgumentException(
@@ -413,9 +381,6 @@ public class UserManagerImpl implements UserManager {
 		em.persist(user);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.impl.UserManager#authenticate(java.lang.String, java.lang.String)
-	 */
 	public void authenticate(String username, String password)
 			throws AuthenticationException, LockedUserException {
 		if (username == null || username.trim().length() == 0) {
@@ -451,9 +416,6 @@ public class UserManagerImpl implements UserManager {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.impl.UserManager#reset(java.lang.String)
-	 */
 	public String reset(String username) throws UserException, AuthenticationException {
 		if (username == null || username.trim().length() == 0) {
 			throw new IllegalArgumentException(
