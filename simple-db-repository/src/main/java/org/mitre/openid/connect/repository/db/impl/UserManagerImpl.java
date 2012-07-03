@@ -439,22 +439,20 @@ public class UserManagerImpl implements UserManager {
 			throw new LockedUserException();
 		}
 		int psalt = user.getPasswordSalt();
-		try {
-			String phash = salt(psalt, password);
-			if (!phash.equals(user.getPasswordHash())) {
-				int attemps = user.getFailedAttempts() != null ? user
-						.getFailedAttempts() : 0;
-				user.setFailedAttempts(attemps + 1);
-				em.persist(user);
-				throw new AuthenticationException();
-			} else {
-				user.setFailedAttempts(0);
-				em.persist(user);
-			}
-		} catch (Exception e) {
-			logger.error("Problem while authenticating user", e);
-			throw new AuthenticationException();
+
+		String phash = salt(psalt, password);
+		if (!phash.equals(user.getPasswordHash())) {
+			int attemps = user.getFailedAttempts() != null ? user
+					.getFailedAttempts() : 0;
+			user.setFailedAttempts(attemps + 1);
+			em.persist(user);
+			logger.debug("Failed password attempt for user: {}", username);
+			throw new AuthenticationException("Bad password attempt");
+		} else {
+			user.setFailedAttempts(0);
+			em.persist(user);
 		}
+
 	}
 
 	/* (non-Javadoc)
