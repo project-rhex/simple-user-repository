@@ -269,11 +269,7 @@ public class TestUserImpl {
 	
 	@Test public void testRangeAndSortFinder() throws Exception {
 		for(int i = 0; i < 100; i++) {
-			try {
-				createUser();
-			} catch(Exception e) {
-				// It's ok, we're bound to clobber a user or two
-			}
+			createUser();
 		}
 		
 		List<Map<String, String>> results = usermanager.findInRange(0, 10, SortBy.FIRST_NAME);
@@ -344,7 +340,14 @@ public class TestUserImpl {
 	};
 	
 	private void createUser() throws PasswordException, UserException {
-		String username = getRandomName() + Integer.toString(RandomUtils.nextInt(100));
+		String username = null;
+		boolean uniqueUsername = false;
+		while (! uniqueUsername) {
+		    username = getRandomName() + Integer.toString(RandomUtils.nextInt(1000));
+		    if (usermanager.get(username) == null) {
+                uniqueUsername = true;
+            }
+		}
 		String firstname = getRandomName();
 		String lastname = lastnames[RandomUtils.nextInt(lastnames.length)];
 		String email = username + "@" + companies[RandomUtils.nextInt(companies.length)];
