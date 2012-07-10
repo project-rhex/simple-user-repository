@@ -20,7 +20,6 @@ package org.mitre.openid.connect.repository.db;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -52,25 +51,21 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author DRAND
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/org/mitre/openid/connect/repository/db/test.xml" })
+@ContextConfiguration(locations = { "file:src/test/java/org/mitre/openid/connect/repository/db/test.xml" })
 public class TestUserImpl {
 	@Resource UserManager usermanager;
-	
-	public static boolean setup = false;
-	
-	@Before
-	public void testSetup() throws Exception {
-		if (setup) return;
-		setup = true;
-		List<User> users = usermanager.find("%");
-		for(User user : users) {
-			usermanager.delete(user.getUsername());
-		}
-		
-		usermanager.deleteRole("GUEST");
-		usermanager.deleteRole("ADMIN");
-		usermanager.testAndInitialize();
-	}
+
+    @Before
+    public void testSetup() throws Exception {
+        List<User> users = usermanager.find("%");
+        for (User user : users) {
+            if (!user.getUsername().equals("admin")) {
+                usermanager.delete(user.getUsername());
+            }
+        }
+
+        usermanager.deleteRole("GUEST");
+    }
 	
 	@Test public void testCount() throws Exception {
 		usermanager.add("jacob", "Fido1234$");
@@ -81,9 +76,9 @@ public class TestUserImpl {
 	}
 	
 	@Test public void testAdminUserIsCreated() throws Exception {
-		User u = usermanager.get("drand");
+		User u = usermanager.get("admin");
 		assertNotNull(u);
-		assertEquals("drand", u.getUsername());
+		assertEquals("admin", u.getUsername());
 		assertNotNull(u.getRoles());
 		assertTrue(u.getRoles().size() > 0);
 		assertEquals("ADMIN", u.getRoles().iterator().next().getName());
@@ -168,7 +163,7 @@ public class TestUserImpl {
 	@Test public void testResetAndConfirmation() throws Exception {
 		usermanager.add("joex", "xyZZ12##");
 		User j = usermanager.get("joex");
-		Role g = usermanager.findRole("GUEST");
+		Role g = usermanager.findOrCreateRole("GUEST");
 		j.getRoles().add(g);
 		j.setEmail("drand@mitre.org");
 		j.setEmailConfirmed(true);
@@ -201,7 +196,7 @@ public class TestUserImpl {
 	@Test public void testRoleMembership() throws Exception {
 		usermanager.add("charlie", "xaBC95(#");
 		User c = usermanager.get("charlie");
-		Role g = usermanager.findRole("GUEST");
+		Role g = usermanager.findOrCreateRole("GUEST");
 		c.getRoles().add(g);
 		usermanager.save(c);
 		
@@ -211,8 +206,8 @@ public class TestUserImpl {
 		assertEquals(g, c.getRoles().iterator().next());
 		
 		// Add another role, remove original role
-		Role t = usermanager.findRole("TEST");
-		c.getRoles().add(usermanager.findRole("TEST"));
+		Role t = usermanager.findOrCreateRole("TEST");
+		c.getRoles().add(usermanager.findOrCreateRole("TEST"));
 		c.getRoles().remove(g);
 		usermanager.save(c);
 		
@@ -274,11 +269,7 @@ public class TestUserImpl {
 	
 	@Test public void testRangeAndSortFinder() throws Exception {
 		for(int i = 0; i < 100; i++) {
-			try {
-				createUser();
-			} catch(Exception e) {
-				// It's ok, we're bound to clobber a user or two
-			}
+			createUser();
 		}
 		
 		List<Map<String, String>> results = usermanager.findInRange(0, 10, SortBy.FIRST_NAME);
@@ -349,7 +340,14 @@ public class TestUserImpl {
 	};
 	
 	private void createUser() throws PasswordException, UserException {
-		String username = getRandomName() + Integer.toString(RandomUtils.nextInt(100));
+		String username = null;
+		boolean uniqueUsername = false;
+		while (! uniqueUsername) {
+		    username = getRandomName() + Integer.toString(RandomUtils.nextInt(1000));
+		    if (usermanager.get(username) == null) {
+                uniqueUsername = true;
+            }
+		}
 		String firstname = getRandomName();
 		String lastname = lastnames[RandomUtils.nextInt(lastnames.length)];
 		String email = username + "@" + companies[RandomUtils.nextInt(companies.length)];

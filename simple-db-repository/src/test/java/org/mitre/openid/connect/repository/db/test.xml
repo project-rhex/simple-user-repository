@@ -11,41 +11,23 @@
 	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd'>
 	
 	<context:annotation-config />
-	<!-- <context:load-time-weaver weaver-class="org.springframework.instrument.classloading.SimpleLoadTimeWeaver" /> -->
 	
 	<!-- enable the configuration of transactional behavior based on annotations -->
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
-	<bean id="propertyConfigurer"
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="locations">
-			<util:list>
-				<value>classpath:test.properties</value>
-			</util:list>
-		</property>
-	</bean>
-	
     <bean id="dataSource" class="org.mitre.jdbc.datasource.H2DataSourceFactory">
        <property name="databaseName" value="connect"/>
        <property name="persist" value="false" />
        <property name="scriptLocations" >
            <list>
                <value>file:db/schema.ddl</value>
+               <value>file:db/seed.sql</value>
            </list>
        </property>
     </bean>
     
     <bean id="spe" class="org.mitre.openid.connect.repository.db.impl.SimplePasswordEncoder" />
-    
-    <!-- 
-    <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
-    	<property name="driverClass" value="${jdbc.driverClass}" />
-    	<property name="url" value="${jdbc.url}" />
-    	<property name="username" value="${jdbc.username}" />
-    	<property name="password" value="${jdbc.password}" />
-    </bean>	
-     -->
-         
+
     <bean id="jpaAdapter" class="org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter">
 		<property name="databasePlatform" value="org.eclipse.persistence.platform.database.MySQLPlatform" />
 		<property name="showSql" value="true" />
@@ -59,7 +41,7 @@
 		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
 		<property name="persistenceUnitName" value="user_datastore" />
 		<property name="persistenceXmlLocation" 
-        	value="classpath:/org/mitre/openid/connect/repository/db/model/persistence.xml" />
+        	value="file:src/main/java/org/mitre/openid/connect/repository/db/model/persistence.xml" />
 		<property name="dataSource" ref="dataSource" />
         <property name="jpaVendorAdapter" ref="jpaAdapter" />
 		<property name="jpaPropertyMap">
@@ -74,8 +56,8 @@
 	<bean id="usermanager" class="org.mitre.openid.connect.repository.db.impl.UserManagerImpl">
 		<property name="attemptLimit" value="3" />
 		<property name="base" value="http://10.10.10.3:8180/foobar" />
-		<property name="defaultAdminUserEmail" value="drand@mitre.org" />
-		<property name="defaultAdminUserName" value="drand" />
+		<property name="defaultAdminUserEmail" value="admin@rhex.us" />
+		<property name="defaultAdminUserName" value="admin" />
 		<property name="mailer" ref="sender" />
 		<property name="passwordRule">
 			<bean class="org.mitre.openid.connect.repository.db.impl.SimplePasswordRule" />

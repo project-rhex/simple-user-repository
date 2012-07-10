@@ -18,20 +18,14 @@
  ***************************************************************************************/
 package org.mitre.openid.connect.repository.db.impl;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.sql.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.naming.AuthenticationException;
 import javax.persistence.EntityManager;
@@ -40,12 +34,7 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.RandomUtils;
-import org.mitre.openid.connect.model.Address;
-import org.mitre.openid.connect.model.DefaultUserInfo;
-import org.mitre.openid.connect.model.UserInfo;
 import org.mitre.openid.connect.repository.SortBy;
-import org.mitre.openid.connect.repository.StandardAttributes;
 import org.mitre.openid.connect.repository.UserManager;
 import org.mitre.openid.connect.repository.db.IPasswordRule;
 import org.mitre.openid.connect.repository.db.IUserValidity;
@@ -100,7 +89,7 @@ public class UserManagerImpl implements UserManager {
 	/**
 	 * Rule that decides if a user is acceptable to the system
 	 */
-	private IUserValidity userValidity = null;
+	private IUserValidity userValidity = new SimpleUserValidity();
 	/**
 	 * Secure random number generator. Do not replace with the regular random
 	 * number generator. A pseudo random number generator will tend to produce
@@ -124,48 +113,6 @@ public class UserManagerImpl implements UserManager {
 	 */
 	private URL base = null; 
 	
-	private AtomicBoolean initialized = new AtomicBoolean(false);
-	
-	/**
-	 * If the repository has no users that are administrators, create one based
-	 * on the configuration. Also, create the admin role if it doesn't exist.
-	 */
-	public void testAndInitialize() {
-		if (initialized.get()) return;
-		initialized.set(true);
-		@SuppressWarnings("unchecked")
-		Role admin = findRole("ADMIN");
-		// Find admin users only
-		TypedQuery<User> uq = (TypedQuery<User>) em.createNamedQuery("users.by_admin_role"); 
-		List<User> users = uq.getResultList();
-		if (users.size() == 0) {
-			if (StringUtils.isBlank(defaultAdminUserName)) {
-				logger.warn("Cannot create default user");
-				return;
-			}
-			User defaultAdminUser = new User();
-			defaultAdminUser.setUsername(defaultAdminUserName);
-			defaultAdminUser.setEmail(defaultAdminUserEmail);
-			String initialpw = defaultAdminUserPassword;
-			int randomSalt = random.nextInt();
-			try {
-				String randomHash = salt(randomSalt, initialpw);
-				defaultAdminUser.setPasswordHash(randomHash);
-                //System.out.println("GG4");
-                defaultAdminUser.setJamesPasswordHash(defaultAdminUser.encodeJamesPasswordHash(initialpw));
-				defaultAdminUser.setPasswordSalt(randomSalt);
-				defaultAdminUser.getRoles().add(admin);
-				em.persist(defaultAdminUser);
-			} catch (Exception e) {
-				logger.error("Something's wrong that shouldn't be wrong", e);
-			}
-		}
-		
-		if (userValidity == null) {
-			userValidity = new SimpleUserValidity();
-		}
-	}
-	
 	/*
 	 * (non-Javadoc)
 	 * @see org.mitre.openid.connect.repository.db.UserManager#count()
@@ -186,9 +133,6 @@ public class UserManagerImpl implements UserManager {
 		return em.find(User.class, id);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.impl.UserManager#get(java.lang.String)
-	 */
 	public User get(String username) {
 		if (username == null || username.trim().length() == 0) {
 			throw new IllegalArgumentException(
@@ -200,9 +144,6 @@ public class UserManagerImpl implements UserManager {
 		return results.size() > 0 ? results.get(0) : null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.UserManager#save(org.mitre.itflogin.model.User)
-	 */
 	public void save(User user) {
 		if (user == null) {
 			throw new IllegalArgumentException(
@@ -219,10 +160,6 @@ public class UserManagerImpl implements UserManager {
 		uq.executeUpdate();
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see org.mitre.itflogin.UserManager#delete(java.lang.String)
-	 */
 	public void delete(String username) {
 		if (username == null || username.trim().length() == 0) {
 			throw new IllegalArgumentException(
@@ -257,7 +194,7 @@ public class UserManagerImpl implements UserManager {
 			throw new IllegalArgumentException(
 					"rolename should never be null or empty");
 		}
-		Role existing = findRole(rolename);
+		Role existing = findOrCreateRole(rolename);
 		if (existing != null) {
 			em.remove(existing);
 		} else {
@@ -266,9 +203,6 @@ public class UserManagerImpl implements UserManager {
 		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.UserManager#find(java.lang.String)
-	 */
 	@SuppressWarnings("unchecked")
 	public List<User> find(String likePattern) {
 		if (likePattern == null || likePattern.trim().length() == 0) {
@@ -317,30 +251,18 @@ public class UserManagerImpl implements UserManager {
 		return rval;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.UserManager#find(java.lang.String)
-	 */
-	public Role findRole(String rolename) {
-		if (rolename == null || rolename.trim().length() == 0) {
-			throw new IllegalArgumentException(
-					"rolename should never be null or empty");
-		}
-		@SuppressWarnings("unchecked")
-		TypedQuery<Role> rq = (TypedQuery<Role>) em.createNamedQuery("roles.by_name");
-		List<Role> found = rq.setParameter("name", rolename).getResultList();
-		if (found.size() == 0) {
-			Role role = new Role();
-			role.setName(rolename);
-			em.persist(role);
-			return role;
-		} else {
-			return found.get(0);
-		}
-	}
+    public Role findOrCreateRole(String rolename) {
+        Role role = findRole(rolename);
+        if (role == null) {
+            role = new Role();
+            role.setName(rolename);
+            em.persist(role);
 
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.impl.UserManager#add(java.lang.String, java.lang.String)
-	 */
+        }
+
+        return role;
+    }
+
 	public void add(String username, String password) throws PasswordException,
 			UserException {
 		if (username == null || username.trim().length() == 0) {
@@ -360,7 +282,6 @@ public class UserManagerImpl implements UserManager {
 
 		User newUser = new User();
 		newUser.setUsername(username);
-        //System.out.println("GG5");
         newUser.setJamesPasswordHash(newUser.encodeJamesPasswordHash(password));
 
 		int psalt = random.nextInt();
@@ -378,9 +299,6 @@ public class UserManagerImpl implements UserManager {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.impl.UserManager#checkConfirmation(java.lang.String, java.lang.String)
-	 */
 	public boolean checkConfirmation(String username, String confirmation) {
 		if (username == null || username.trim().length() == 0) {
 			throw new IllegalArgumentException(
@@ -410,9 +328,6 @@ public class UserManagerImpl implements UserManager {
 		}		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.impl.UserManager#modifyPassword(java.lang.String, java.lang.String)
-	 */
 	public void modifyPassword(String username, String newpassword) throws UserException, PasswordException {
 		if (username == null || username.trim().length() == 0) {
 			throw new IllegalArgumentException(
@@ -443,7 +358,6 @@ public class UserManagerImpl implements UserManager {
 		try {
 			String phash = salt(psalt, newpassword);
 			user.setPasswordHash(phash);
-            //System.out.println("GG3");
             user.setJamesPasswordHash(user.encodeJamesPasswordHash(newpassword));
 			user.setPasswordSalt(psalt);
 			user.setConfirmationHash(null); // Assume that the user may have done a reset
@@ -457,9 +371,6 @@ public class UserManagerImpl implements UserManager {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.impl.UserManager#unlock(java.lang.String)
-	 */
 	public void unlock(String username) throws AuthenticationException {
 		if (username == null || username.trim().length() == 0) {
 			throw new IllegalArgumentException(
@@ -474,9 +385,6 @@ public class UserManagerImpl implements UserManager {
 		em.persist(user);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.impl.UserManager#authenticate(java.lang.String, java.lang.String)
-	 */
 	public void authenticate(String username, String password)
 			throws AuthenticationException, LockedUserException {
 		if (username == null || username.trim().length() == 0) {
@@ -496,27 +404,22 @@ public class UserManagerImpl implements UserManager {
 			throw new LockedUserException();
 		}
 		int psalt = user.getPasswordSalt();
-		try {
-			String phash = salt(psalt, password);
-			if (!phash.equals(user.getPasswordHash())) {
-				int attemps = user.getFailedAttempts() != null ? user
-						.getFailedAttempts() : 0;
-				user.setFailedAttempts(attemps + 1);
-				em.persist(user);
-				throw new AuthenticationException();
-			} else {
-				user.setFailedAttempts(0);
-				em.persist(user);
-			}
-		} catch (Exception e) {
-			logger.error("Problem while authenticating user", e);
-			throw new AuthenticationException();
+
+		String phash = salt(psalt, password);
+		if (!phash.equals(user.getPasswordHash())) {
+			int attemps = user.getFailedAttempts() != null ? user
+					.getFailedAttempts() : 0;
+			user.setFailedAttempts(attemps + 1);
+			em.persist(user);
+			logger.debug("Failed password attempt for user: {}", username);
+			throw new AuthenticationException("Bad password attempt");
+		} else {
+			user.setFailedAttempts(0);
+			em.persist(user);
 		}
+
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.itflogin.impl.UserManager#reset(java.lang.String)
-	 */
 	public String reset(String username) throws UserException, AuthenticationException {
 		if (username == null || username.trim().length() == 0) {
 			throw new IllegalArgumentException(
@@ -677,5 +580,19 @@ public class UserManagerImpl implements UserManager {
 		this.userValidity = userValidity;
 	}
 
-
+    @Override
+    public Role findRole(String rolename) {
+        if (rolename == null || rolename.trim().length() == 0) {
+            throw new IllegalArgumentException(
+                    "rolename should never be null or empty");
+        }
+        @SuppressWarnings("unchecked")
+        TypedQuery<Role> rq = (TypedQuery<Role>) em.createNamedQuery("roles.by_name");
+        List<Role> found = rq.setParameter("name", rolename).getResultList();
+        if (found.size() == 0) {
+            return null;
+        } else {
+            return found.get(0);
+        }
+    }
 }
