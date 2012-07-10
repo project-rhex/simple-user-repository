@@ -297,6 +297,7 @@ public class UserController {
         if (admin_role != null) {
         	postedUser.getRoles().add(userManager.findRole("ADMIN"));
         }
+        postedUser.getRoles().add(userManager.findOrCreateRole("USER"));
         
         userManager.save(postedUser);
 	}

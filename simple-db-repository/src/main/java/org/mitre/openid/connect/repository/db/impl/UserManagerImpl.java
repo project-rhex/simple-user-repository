@@ -70,19 +70,6 @@ public class UserManagerImpl implements UserManager {
 	private EntityManager em;
 	
 	/**
-	 * The default administrative user to create *if* there are no defined 
-	 * admin users in the system on startup.
-	 */
-	private String defaultAdminUserName = null;
-	/**
-	 * Email for the default administrative user
-	 */
-	private String defaultAdminUserEmail = null;
-	/**
-	 * Default password for the admin user
-	 */
-	private String defaultAdminUserPassword = "PassWord";
-	/**
 	 * Rule that decides if a password is acceptable to the system. 
 	 */
 	private IPasswordRule passwordRule = null;
@@ -524,42 +511,6 @@ public class UserManagerImpl implements UserManager {
 		} catch (MalformedURLException e) {
 			logger.error("Problem parsing base url", e);
 		}
-	}
-
-	/**
-	 * @return the defaultAdminUserName
-	 */
-	public String getDefaultAdminUserName() {
-		return defaultAdminUserName;
-	}
-
-	/**
-	 * @param defaultAdminUserName the defaultAdminUserName to set
-	 */
-	public void setDefaultAdminUserName(String defaultAdminUserName) {
-		this.defaultAdminUserName = defaultAdminUserName;
-	}
-
-	/**
-	 * @return the defaultAdminUserEmail
-	 */
-	public String getDefaultAdminUserEmail() {
-		return defaultAdminUserEmail;
-	}
-
-	/**
-	 * @param defaultAdminUserEmail the defaultAdminUserEmail to set
-	 */
-	public void setDefaultAdminUserEmail(String defaultAdminUserEmail) {
-		this.defaultAdminUserEmail = defaultAdminUserEmail;
-	}
-
-	public String getDefaultAdminUserPassword() {
-		return defaultAdminUserPassword;
-	}
-
-	public void setDefaultAdminUserPassword(String defaultAdminUserPassword) {
-		this.defaultAdminUserPassword = defaultAdminUserPassword;
 	}
 
 	/**
