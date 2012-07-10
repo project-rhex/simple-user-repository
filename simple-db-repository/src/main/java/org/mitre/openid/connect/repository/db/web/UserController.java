@@ -280,6 +280,7 @@ public class UserController {
         } else {
         	postedUser.getRoles().add(userManager.findOrCreateRole("PATIENT"));
         }
+        postedUser.getRoles().add(userManager.findOrCreateRole("USER"));
         
         userManager.save(postedUser);
 	}
