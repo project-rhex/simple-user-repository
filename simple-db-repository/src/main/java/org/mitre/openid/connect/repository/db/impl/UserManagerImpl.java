@@ -141,10 +141,6 @@ public class UserManagerImpl implements UserManager {
 			em.persist(user);
 		else
 			em.merge(user);
-		// Cleanup attributes
-		TypedQuery<User> uq = (TypedQuery<User>) em.createQuery(
-				"delete from UserAttribute where userId is null");
-		uq.executeUpdate();
 	}
 	
 	public void delete(String username) {

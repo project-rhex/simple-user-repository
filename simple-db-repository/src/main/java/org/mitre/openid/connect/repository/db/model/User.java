@@ -43,6 +43,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
  
+import org.eclipse.persistence.annotations.PrivateOwned;
 import org.mitre.openid.connect.repository.UserManager;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -271,6 +272,7 @@ public class User implements UserDetails {
 	 */
 	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@JoinColumn(name = "USER_ID")
+	@PrivateOwned
 	public Set<UserAttribute> getAttributes() {
 		return attributes;
 	}

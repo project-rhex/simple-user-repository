@@ -238,6 +238,7 @@ public class UserController {
 	private void processUserData(String userJson, Long userId) {
         Gson gson = new Gson();
         User postedUser = null;
+        
         JsonParser parser = new JsonParser();
         JsonElement obj = parser.parse(userJson);
         postedUser = gson.fromJson(obj, User.class);
@@ -260,7 +261,7 @@ public class UserController {
         }
         // Grab other attributes - the json is not really a User serialization
         boolean patient = false, clinician = false;
-        JsonObject data = (JsonObject) obj;
+        JsonObject data = (JsonObject) obj;    
         for(Entry<String, JsonElement> entry : data.entrySet()) {
         	String key = entry.getKey();
         	JsonElement value = entry.getValue();
@@ -278,8 +279,10 @@ public class UserController {
         	}
         	if (key.contains("role")) continue; // Skip roles
         	if (StringUtils.isBlank(value.getAsString())) continue;
-        	postedUser.getAttributes().add(new UserAttribute(key.toUpperCase(), value.getAsString()));
-        }
+        	String attrName = key.toUpperCase();
+        	postedUser.getAttributes().add(new UserAttribute(attrName, value.getAsString()));
+        }      
+        
         postedUser.setUsername(postedUser.getEmail());
         
         if (userId != null) { 
@@ -287,20 +290,27 @@ public class UserController {
         }
         
         // Clear and add new roles
-        postedUser.getRoles().clear();
         if (clinician = true) {
         	postedUser.getRoles().add(userManager.findOrCreateRole("CLINICIAN"));
+        	postedUser.getRoles().remove(userManager.findOrCreateRole("PATIENT"));
         } else {
         	postedUser.getRoles().add(userManager.findOrCreateRole("PATIENT"));
+        	postedUser.getRoles().remove(userManager.findOrCreateRole("CLINICIAN"));
         }
         JsonElement admin_role = data.get("admin_role");
         if (admin_role != null) {
         	postedUser.getRoles().add(userManager.findRole("ADMIN"));
+        } else {
+        	postedUser.getRoles().remove(userManager.findRole("ADMIN"));
         }
-        postedUser.getRoles().add(userManager.findOrCreateRole("USER"));
+        Role userRole = userManager.findOrCreateRole("USER");
+        if (! postedUser.getRoles().contains(userRole)) {
+        	postedUser.getRoles().add(userRole);
+        }
         
         userManager.save(postedUser);
 	}
+	
 	
 	/**
 	 * @return the um
