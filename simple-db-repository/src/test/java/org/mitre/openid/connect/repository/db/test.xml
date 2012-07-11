@@ -56,8 +56,6 @@
 	<bean id="usermanager" class="org.mitre.openid.connect.repository.db.impl.UserManagerImpl">
 		<property name="attemptLimit" value="3" />
 		<property name="base" value="http://10.10.10.3:8180/foobar" />
-		<property name="defaultAdminUserEmail" value="admin@rhex.us" />
-		<property name="defaultAdminUserName" value="admin" />
 		<property name="mailer" ref="sender" />
 		<property name="passwordRule">
 			<bean class="org.mitre.openid.connect.repository.db.impl.SimplePasswordRule" />
