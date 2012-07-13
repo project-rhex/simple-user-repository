@@ -118,7 +118,7 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
 			addUserAttribute(user, StandardAttributes.POSTAL_CODE, addr.getPostalCode());
 			addUserAttribute(user, StandardAttributes.COUNTRY, addr.getCountry());
 		}
-		user.setEmailConfirmed(userInfo.getVerified());
+		user.setEmailConfirmed(userInfo.getEmailVerified());
 		if (userInfo instanceof PropertiedUserInfo) {
 			PropertiedUserInfo pui = (PropertiedUserInfo) userInfo;
 			for(String key : pui.keySet()) {
@@ -200,7 +200,7 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
 		info.setUpdatedTime(amap.get(StandardAttributes.UPDATED_TIME.name()));
 		amap.remove(StandardAttributes.UPDATED_TIME.name());
 		info.setUserId(user.getUsername());
-		info.setVerified(user.getEmailConfirmed());
+		info.setEmailVerified(user.getEmailConfirmed());
 		info.setWebsite(amap.get(StandardAttributes.WEBSITE.name()));
 		amap.remove(StandardAttributes.WEBSITE.name());
 		info.setZoneinfo(amap.get(StandardAttributes.ZONEINFO.name()));
