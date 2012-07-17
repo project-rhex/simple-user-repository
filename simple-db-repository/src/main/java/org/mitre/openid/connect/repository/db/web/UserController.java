@@ -33,6 +33,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
+import org.mitre.openid.connect.model.Address;
 import org.mitre.openid.connect.model.UserInfo;
 import org.mitre.openid.connect.repository.SortBy;
 import org.mitre.openid.connect.repository.UserInfoRepository;
@@ -152,6 +153,30 @@ public class UserController {
 		return editUser(null);
 	}
 	
+	private static Set<String> FIELDS = new HashSet<String>();
+	
+	static {
+		// Maintain the set of fields that belong to the user object here. Needed for the processing of the submittal
+		// These are the fields that don't get handled as attributes. Make sure to update add_user.js as well!
+		FIELDS.add("firstname");
+		FIELDS.add("lastname");
+		FIELDS.add("middlename");
+		FIELDS.add("nickname");
+		FIELDS.add("gender");
+		FIELDS.add("phone");
+		FIELDS.add("picture");
+		FIELDS.add("website");
+		FIELDS.add("profile");
+		FIELDS.add("zoneinfo");
+		FIELDS.add("email");
+		FIELDS.add("street");
+		FIELDS.add("locality");
+		FIELDS.add("region");
+		FIELDS.add("postalCode");
+		FIELDS.add("password");
+		FIELDS.add("password_repeat");
+	}
+	
 	@RequestMapping(value = "/editUser/{id}", method = RequestMethod.GET) 
 	public ModelAndView editUser(@PathVariable Long id) {
 		ModelAndView mav = new ModelAndView("users/addOrEditUser");
@@ -163,9 +188,23 @@ public class UserController {
 			UserInfo info = userinfo.getByUserId(user.getUsername());
 			mav.addObject("label", "Edit");
 			mav.addObject("userid", id.toString());
-			mav.addObject("first_name_field", info.getGivenName());
-			mav.addObject("last_name_field", info.getFamilyName());
+			mav.addObject("firstname_field", info.getGivenName());
+			mav.addObject("lastname_field", info.getFamilyName());
+			mav.addObject("middlename_field", info.getMiddleName());
+			mav.addObject("nickname_field", info.getNickname());
+			mav.addObject("gender_field", info.getGender());
+			mav.addObject("phone_field", info.getPhoneNumber());
+			mav.addObject("picture_field", info.getPicture());
+			mav.addObject("website_field", info.getWebsite());
+			mav.addObject("profile_field", info.getProfile());
+			mav.addObject("zoneinfo_field", info.getZoneinfo());
 			mav.addObject("email_field", info.getEmail());
+			Address addr = info.getAddress();
+			if (addr == null) addr = new Address();
+			mav.addObject("street_field", addr.getStreetAddress());
+			mav.addObject("locality_field", addr.getLocality());
+			mav.addObject("region_field", addr.getRegion());
+			mav.addObject("postalCode_field", addr.getPostalCode());			
 			boolean clinician = false;
 			boolean admin = false;
 			for(Role r : user.getRoles()) {
@@ -182,8 +221,6 @@ public class UserController {
 			Set<String> keys = attrs.keySet();
 			keys.remove("title_field");
 			keys.remove("user-id_field");
-			keys.remove("first_name_field");
-			keys.remove("last_name_field");
 			mav.addObject("properties", keys);
 			mav.addObject("propertymap", attrs);
 		}
@@ -265,7 +302,7 @@ public class UserController {
         for(Entry<String, JsonElement> entry : data.entrySet()) {
         	String key = entry.getKey();
         	JsonElement value = entry.getValue();
-        	if (key.startsWith("password") || "email".equals(key)) continue;
+        	if (FIELDS.contains(key)) continue;
         	if (key.equals("patient")) {
         		patient = true;
         		continue;

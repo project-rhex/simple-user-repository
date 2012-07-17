@@ -113,7 +113,7 @@ public class TestUserInfoRepository {
 		assertEquals("Smith", ui.getFamilyName());
 		assertEquals("Michael", ui.getGivenName());
 		assertEquals("Eugene", ui.getMiddleName());
-		assertEquals("Mike Smith", ui.getName());
+		assertEquals("Michael Smith", ui.getName());
 		assertEquals("Mike", ui.getNickname());
 		assertEquals("978 256 1111", ui.getPhoneNumber());
 		assertEquals("http://www.flicker.com/123456.png", ui.getPicture());

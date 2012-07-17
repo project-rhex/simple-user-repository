@@ -48,12 +48,17 @@ usr = {
 	  if (errors)
 		  return;
 	  else {
-		var u = new usr.User(usr.results);
+		var u = new usr.User();
 		if (user_id > -1) {
 			u.set("user-id", user_id);
 		}
-		u.save();
-		usr.nav_to_user_list();
+		u.save(usr.results, { success: function(model, response) {
+					usr.nav_to_user_list();	
+				 },
+				 error: function() {	
+					alert("error while saving user data");
+				 }
+		});
 	  }  
   },
   
@@ -98,7 +103,11 @@ usr = {
 	  }
   },
   
-  properties: [ "title", "first_name", "last_name", "email", "password" ]
+  
+  
+  properties: [ "title", "firstname", "lastname", "email", "password", "middlename", "nickname",
+                "gender", "phone", "picture", "website", "profile", "zoneinfo", "street", "locality",
+                "region", "postalCode", "password_repeat" ]
 }
 
 $(document).ready(function() {

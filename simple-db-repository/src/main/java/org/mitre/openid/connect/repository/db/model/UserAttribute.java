@@ -18,29 +18,23 @@
  ***************************************************************************************/
 package org.mitre.openid.connect.repository.db.model;
 
+import java.io.Serializable;
 import java.sql.Date;
 
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
-
-import org.eclipse.persistence.indirection.ValueHolderInterface;
-import org.mitre.openid.connect.repository.StandardAttributes;
 
 @Entity
 @Table(name = "USER_ATTRIBUTES")
 @NamedQuery(query="select ua from UserAttribute ua where ua.userId = :id", 
 			name = "user_attributes.by_user_id")
-public class UserAttribute {
+public class UserAttribute implements Serializable {
 	/**
 	 * Regular attribute value attribute
 	 */
@@ -65,16 +59,6 @@ public class UserAttribute {
 	 */
 	public UserAttribute() {
 		// Intentionally empty
-	}
-	
-	/**
-	 * Ctor
-	 * @param name
-	 * @param value
-	 * @param params
-	 */
-	public UserAttribute(StandardAttributes name, String value, Object... params) {
-		this(name.name(), value, params);
 	}
 	
 	/**

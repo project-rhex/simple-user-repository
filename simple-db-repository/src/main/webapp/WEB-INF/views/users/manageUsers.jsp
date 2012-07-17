@@ -21,8 +21,6 @@
 	bc.add(new Breadcrumb("Manage Users"));
 	request.setAttribute("bc", bc);
 %>   
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
 <o:header title="User Management - User List Page" />
 <o:topbar />
 <o:includes />

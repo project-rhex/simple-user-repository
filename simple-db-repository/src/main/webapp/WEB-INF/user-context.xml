@@ -15,6 +15,10 @@
 
 	<security:global-method-security pre-post-annotations="enabled" proxy-target-class="true" authentication-manager-ref="authenticationManager"/>
 
+	<oauth2:expression-handler id="oauthExpressionHandler" />
+
+	<oauth2:web-expression-handler id="oauthWebExpressionHandler" />
+	
 	<security:authentication-manager alias="authenticationManager">
 		<security:authentication-provider user-service-ref="simpleUserDetailsService">
 			<security:password-encoder ref="simplePasswordEncoder">

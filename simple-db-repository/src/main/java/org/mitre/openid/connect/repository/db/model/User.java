@@ -69,8 +69,12 @@ import javax.mail.internet.MimeUtility;
 @Entity
 @Table(name = "USERS")
 @NamedQueries(value = {
-		@NamedQuery(name = "users.by_user_attribute_name", 
-			query = "select u from User u, UserAttribute ua where u.id = ua.userId and ua.name = :attr order by ua.value"),
+		@NamedQuery(name = "users.by_first_name", 
+			query = "select u from User u order by u.firstname"),
+		@NamedQuery(name = "users.by_last_name", 
+			query = "select u from User u order by u.lastname"),
+		@NamedQuery(name = "users.by_email", 
+			query = "select u from User u order by u.email"),			
 		@NamedQuery(name = "users.by_username",
 			query = "select u from User u where u.username = :username"),
 		@NamedQuery(name = "users.by_admin_role",
@@ -82,14 +86,32 @@ import javax.mail.internet.MimeUtility;
 		@NamedQuery(name = "users.count",
 			query = "select count(u) from User u")
 })
-public class User implements UserDetails {
+public class User implements UserDetails, Serializable {
 	private Long id;
 	private String username;
+	
 	private Integer passwordSalt;	
 	private String passwordHash;
 	private String jamesPasswordHash;
 	private String email;
 	private Boolean emailConfirmed = false;
+	private String firstname;
+	private String middlename;
+	private String lastname;
+	private String nickname;
+	private String profile;
+	private String picture;
+	private String website;
+	private String gender;
+	private String zoneinfo;
+	private String locale;
+	private String phone;
+	private String formattedAddress;
+	private String street;
+	private String locality;
+	private String region;
+	private String country;
+	private String postalCode;
 	private String confirmationHash;
 	private Integer failedAttempts = 0;
 	private Set<Role> roles = new HashSet<Role>();
@@ -194,6 +216,278 @@ public class User implements UserDetails {
 	 */
 	public void setEmail(String email) {
 		this.email = email;
+	}
+	
+	/**
+	 * @return the firstname
+	 */
+    @Basic
+    @Column(name = "FIRST_NAME", length = 48)
+	public String getFirstname() {
+		return firstname;
+	}
+
+	/**
+	 * @param firstname the firstname to set
+	 */
+	public void setFirstname(String firstname) {
+		this.firstname = firstname;
+	}
+
+	/**
+	 * @return the middlename
+	 */
+	@Basic
+    @Column(name = "MIDDLE_NAME", length = 48)
+	public String getMiddlename() {
+		return middlename;
+	}
+
+	/**
+	 * @param middlename the middlename to set
+	 */
+	public void setMiddlename(String middlename) {
+		this.middlename = middlename;
+	}
+
+	/**
+	 * @return the lastname
+	 */
+	@Basic
+    @Column(name = "LAST_NAME", length = 48)
+	public String getLastname() {
+		return lastname;
+	}
+
+	/**
+	 * @param lastname the lastname to set
+	 */
+	public void setLastname(String lastname) {
+		this.lastname = lastname;
+	}
+
+	/**
+	 * @return the nickname
+	 */
+	@Basic
+    @Column(name = "NICKNAME", length = 48)
+	public String getNickname() {
+		return nickname;
+	}
+
+	/**
+	 * @param nickname the nickname to set
+	 */
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
+	}
+
+	/**
+	 * @return the profile
+	 */
+	@Basic
+    @Column(name = "PROFILE", length = 512)
+	public String getProfile() {
+		return profile;
+	}
+
+	/**
+	 * @param profile the profile to set
+	 */
+	public void setProfile(String profile) {
+		this.profile = profile;
+	}
+
+	/**
+	 * @return the picture
+	 */
+	@Basic
+	@Column(name = "PICTURE", length = 512)
+	public String getPicture() {
+		return picture;
+	}
+
+	/**
+	 * @param picture the picture to set
+	 */
+	public void setPicture(String picture) {
+		this.picture = picture;
+	}
+
+	/**
+	 * @return the website
+	 */
+	@Basic
+    @Column(name = "WEBSITE", length = 512)
+	public String getWebsite() {
+		return website;
+	}
+
+	/**
+	 * @param website the website to set
+	 */
+	public void setWebsite(String website) {
+		this.website = website;
+	}
+
+	/**
+	 * @return the gender
+	 */
+	@Basic
+    @Column(name = "GENDER", length = 1)
+	public String getGender() {
+		return gender;
+	}
+
+	/**
+	 * @param gender the gender to set
+	 */
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	/**
+	 * @return the zoneinfo
+	 */
+	@Basic
+    @Column(name = "ZONEINFO", length = 16)
+	public String getZoneinfo() {
+		return zoneinfo;
+	}
+
+	/**
+	 * @param zoneinfo the zoneinfo to set
+	 */
+	public void setZoneinfo(String zoneinfo) {
+		this.zoneinfo = zoneinfo;
+	}
+
+	/**
+	 * @return the locale
+	 */
+	@Basic
+    @Column(name = "LOCALE", length = 64)
+	public String getLocale() {
+		return locale;
+	}
+
+	/**
+	 * @param locale the locale to set
+	 */
+	public void setLocale(String locale) {
+		this.locale = locale;
+	}
+
+	/**
+	 * @return the phone
+	 */
+	@Basic
+    @Column(name = "PHONE_NUMBER", length = 32)
+	public String getPhone() {
+		return phone;
+	}
+
+	/**
+	 * @param phone the phone to set
+	 */
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	/**
+	 * @return the formattedAddress
+	 */
+	@Basic
+	@Column(name = "FORMATTED_ADDRESS", length = 256)
+	public String getFormattedAddress() {
+		return formattedAddress;
+	}
+
+	/**
+	 * @param formattedAddress the formattedAddress to set
+	 */
+	public void setFormattedAddress(String formattedAddress) {
+		this.formattedAddress = formattedAddress;
+	}
+
+	/**
+	 * @return the street
+	 */
+	@Basic
+    @Column(name = "STREET", length = 32)
+	public String getStreet() {
+		return street;
+	}
+
+	/**
+	 * @param street the street to set
+	 */
+	public void setStreet(String street) {
+		this.street = street;
+	}
+
+	/**
+	 * @return the locality
+	 */
+	@Basic
+    @Column(name = "LOCALITY", length = 32)
+	public String getLocality() {
+		return locality;
+	}
+
+	/**
+	 * @param locality the locality to set
+	 */
+	public void setLocality(String locality) {
+		this.locality = locality;
+	}
+
+	/**
+	 * @return the region
+	 */
+	@Basic
+    @Column(name = "REGION", length = 32)
+	public String getRegion() {
+		return region;
+	}
+
+	/**
+	 * @param region the region to set
+	 */
+	public void setRegion(String region) {
+		this.region = region;
+	}
+
+	/**
+	 * @return the country
+	 */
+	@Basic
+    @Column(name = "COUNTRY", length = 32)
+	public String getCountry() {
+		return country;
+	}
+
+	/**
+	 * @param country the country to set
+	 */
+	public void setCountry(String country) {
+		this.country = country;
+	}
+	
+	/**
+	 * @return the postalCode
+	 */
+	@Basic
+	@Column(name = "POSTAL_CODE", length = 32)
+	public String getPostalCode() {
+		return postalCode;
+	}
+
+	/**
+	 * @param postalCode the postalCode to set
+	 */
+	public void setPostalCode(String postalCode) {
+		this.postalCode = postalCode;
 	}
 
 	/**
@@ -300,109 +594,6 @@ public class User implements UserDetails {
 		this.updated = updated;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((attributes == null) ? 0 : attributes.hashCode());
-		result = prime
-				* result
-				+ ((confirmationHash == null) ? 0 : confirmationHash.hashCode());
-		result = prime * result + ((email == null) ? 0 : email.hashCode());
-		result = prime * result
-				+ ((emailConfirmed == null) ? 0 : emailConfirmed.hashCode());
-		result = prime * result
-				+ ((failedAttempts == null) ? 0 : failedAttempts.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result
-				+ ((passwordHash == null) ? 0 : passwordHash.hashCode());
-		result = prime * result
-				+ ((passwordSalt == null) ? 0 : passwordSalt.hashCode());
-		result = prime * result + ((roles == null) ? 0 : roles.hashCode());
-		result = prime * result + ((updated == null) ? 0 : updated.hashCode());
-		result = prime * result
-				+ ((username == null) ? 0 : username.hashCode());
-		return result;
-	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		User other = (User) obj;
-		if (attributes == null) {
-			if (other.attributes != null)
-				return false;
-		} else if (!attributes.equals(other.attributes))
-			return false;
-		if (confirmationHash == null) {
-			if (other.confirmationHash != null)
-				return false;
-		} else if (!confirmationHash.equals(other.confirmationHash))
-			return false;
-		if (email == null) {
-			if (other.email != null)
-				return false;
-		} else if (!email.equals(other.email))
-			return false;
-		if (emailConfirmed == null) {
-			if (other.emailConfirmed != null)
-				return false;
-		} else if (!emailConfirmed.equals(other.emailConfirmed))
-			return false;
-		if (failedAttempts == null) {
-			if (other.failedAttempts != null)
-				return false;
-		} else if (!failedAttempts.equals(other.failedAttempts))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (passwordHash == null) {
-			if (other.passwordHash != null)
-				return false;
-		} else if (!passwordHash.equals(other.passwordHash))
-			return false;
-		if (jamesPasswordHash == null) {
-			if (other.jamesPasswordHash != null)
-				return false;
-		} else if (!jamesPasswordHash.equals(other.jamesPasswordHash))
-			return false;
-		if (passwordSalt == null) {
-			if (other.passwordSalt != null)
-				return false;
-		} else if (!passwordSalt.equals(other.passwordSalt))
-			return false;
-		if (roles == null) {
-			if (other.roles != null)
-				return false;
-		} else if (!roles.equals(other.roles))
-			return false;
-		if (updated == null) {
-			if (other.updated != null)
-				return false;
-		} else if (!updated.equals(other.updated))
-			return false;
-		if (username == null) {
-			if (other.username != null)
-				return false;
-		} else if (!username.equals(other.username))
-			return false;
-		return true;
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -456,8 +647,211 @@ public class User implements UserDetails {
 		return true;
 	}
 
+    /* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((attributes == null) ? 0 : attributes.hashCode());
+		result = prime
+				* result
+				+ ((confirmationHash == null) ? 0 : confirmationHash.hashCode());
+		result = prime * result + ((country == null) ? 0 : country.hashCode());
+		result = prime * result + ((email == null) ? 0 : email.hashCode());
+		result = prime * result
+				+ ((emailConfirmed == null) ? 0 : emailConfirmed.hashCode());
+		result = prime * result
+				+ ((failedAttempts == null) ? 0 : failedAttempts.hashCode());
+		result = prime * result
+				+ ((firstname == null) ? 0 : firstname.hashCode());
+		result = prime * result + ((gender == null) ? 0 : gender.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime
+				* result
+				+ ((jamesPasswordHash == null) ? 0 : jamesPasswordHash
+						.hashCode());
+		result = prime * result
+				+ ((lastname == null) ? 0 : lastname.hashCode());
+		result = prime * result + ((locale == null) ? 0 : locale.hashCode());
+		result = prime * result
+				+ ((locality == null) ? 0 : locality.hashCode());
+		result = prime * result
+				+ ((middlename == null) ? 0 : middlename.hashCode());
+		result = prime * result
+				+ ((nickname == null) ? 0 : nickname.hashCode());
+		result = prime * result
+				+ ((passwordHash == null) ? 0 : passwordHash.hashCode());
+		result = prime * result
+				+ ((passwordSalt == null) ? 0 : passwordSalt.hashCode());
+		result = prime * result + ((phone == null) ? 0 : phone.hashCode());
+		result = prime * result + ((picture == null) ? 0 : picture.hashCode());
+		result = prime * result + ((profile == null) ? 0 : profile.hashCode());
+		result = prime * result + ((region == null) ? 0 : region.hashCode());
+		result = prime * result + ((roles == null) ? 0 : roles.hashCode());
+		result = prime * result + ((street == null) ? 0 : street.hashCode());
+		result = prime * result + ((updated == null) ? 0 : updated.hashCode());
+		result = prime * result
+				+ ((username == null) ? 0 : username.hashCode());
+		result = prime * result + ((website == null) ? 0 : website.hashCode());
+		result = prime * result
+				+ ((zoneinfo == null) ? 0 : zoneinfo.hashCode());
+		return result;
+	}
 
-    //** GG: James mail userdb add
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		User other = (User) obj;
+		if (attributes == null) {
+			if (other.attributes != null)
+				return false;
+		} else if (!attributes.equals(other.attributes))
+			return false;
+		if (confirmationHash == null) {
+			if (other.confirmationHash != null)
+				return false;
+		} else if (!confirmationHash.equals(other.confirmationHash))
+			return false;
+		if (country == null) {
+			if (other.country != null)
+				return false;
+		} else if (!country.equals(other.country))
+			return false;
+		if (email == null) {
+			if (other.email != null)
+				return false;
+		} else if (!email.equals(other.email))
+			return false;
+		if (emailConfirmed == null) {
+			if (other.emailConfirmed != null)
+				return false;
+		} else if (!emailConfirmed.equals(other.emailConfirmed))
+			return false;
+		if (failedAttempts == null) {
+			if (other.failedAttempts != null)
+				return false;
+		} else if (!failedAttempts.equals(other.failedAttempts))
+			return false;
+		if (firstname == null) {
+			if (other.firstname != null)
+				return false;
+		} else if (!firstname.equals(other.firstname))
+			return false;
+		if (gender == null) {
+			if (other.gender != null)
+				return false;
+		} else if (!gender.equals(other.gender))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (jamesPasswordHash == null) {
+			if (other.jamesPasswordHash != null)
+				return false;
+		} else if (!jamesPasswordHash.equals(other.jamesPasswordHash))
+			return false;
+		if (lastname == null) {
+			if (other.lastname != null)
+				return false;
+		} else if (!lastname.equals(other.lastname))
+			return false;
+		if (locale == null) {
+			if (other.locale != null)
+				return false;
+		} else if (!locale.equals(other.locale))
+			return false;
+		if (locality == null) {
+			if (other.locality != null)
+				return false;
+		} else if (!locality.equals(other.locality))
+			return false;
+		if (middlename == null) {
+			if (other.middlename != null)
+				return false;
+		} else if (!middlename.equals(other.middlename))
+			return false;
+		if (nickname == null) {
+			if (other.nickname != null)
+				return false;
+		} else if (!nickname.equals(other.nickname))
+			return false;
+		if (passwordHash == null) {
+			if (other.passwordHash != null)
+				return false;
+		} else if (!passwordHash.equals(other.passwordHash))
+			return false;
+		if (passwordSalt == null) {
+			if (other.passwordSalt != null)
+				return false;
+		} else if (!passwordSalt.equals(other.passwordSalt))
+			return false;
+		if (phone == null) {
+			if (other.phone != null)
+				return false;
+		} else if (!phone.equals(other.phone))
+			return false;
+		if (picture == null) {
+			if (other.picture != null)
+				return false;
+		} else if (!picture.equals(other.picture))
+			return false;
+		if (profile == null) {
+			if (other.profile != null)
+				return false;
+		} else if (!profile.equals(other.profile))
+			return false;
+		if (region == null) {
+			if (other.region != null)
+				return false;
+		} else if (!region.equals(other.region))
+			return false;
+		if (roles == null) {
+			if (other.roles != null)
+				return false;
+		} else if (!roles.equals(other.roles))
+			return false;
+		if (street == null) {
+			if (other.street != null)
+				return false;
+		} else if (!street.equals(other.street))
+			return false;
+		if (updated == null) {
+			if (other.updated != null)
+				return false;
+		} else if (!updated.equals(other.updated))
+			return false;
+		if (username == null) {
+			if (other.username != null)
+				return false;
+		} else if (!username.equals(other.username))
+			return false;
+		if (website == null) {
+			if (other.website != null)
+				return false;
+		} else if (!website.equals(other.website))
+			return false;
+		if (zoneinfo == null) {
+			if (other.zoneinfo != null)
+				return false;
+		} else if (!zoneinfo.equals(other.zoneinfo))
+			return false;
+		return true;
+	}
+
+	//** GG: James mail userdb add
     //** encode a passowrd into the needed encoding for the james email server
     //**
     public String encodeJamesPasswordHash(String pass) {

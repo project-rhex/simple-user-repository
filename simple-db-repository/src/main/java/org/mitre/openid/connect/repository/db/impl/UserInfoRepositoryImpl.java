@@ -1,12 +1,14 @@
 package org.mitre.openid.connect.repository.db.impl;
 
 import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -16,7 +18,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.mitre.openid.connect.model.Address;
 import org.mitre.openid.connect.model.UserInfo;
-import org.mitre.openid.connect.repository.StandardAttributes;
 import org.mitre.openid.connect.repository.UserInfoRepository;
 import org.mitre.openid.connect.repository.UserManager;
 import org.mitre.openid.connect.repository.db.data.PropertiedUserInfo;
@@ -97,26 +98,30 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
 		 */
 		if (StringUtils.isNotBlank(userInfo.getEmail()))
 			user.setEmail(userInfo.getEmail());
-		addUserAttribute(user, StandardAttributes.LAST_NAME, userInfo.getFamilyName());
-		addUserAttribute(user, StandardAttributes.FIRST_NAME, userInfo.getGivenName());
-		addUserAttribute(user, StandardAttributes.LOCALE, userInfo.getLocale());
-		addUserAttribute(user, StandardAttributes.MIDDLE_NAME, userInfo.getMiddleName());
-		addUserAttribute(user, StandardAttributes.NAME, userInfo.getName());
-		addUserAttribute(user, StandardAttributes.NICKNAME, userInfo.getNickname());
-		addUserAttribute(user, StandardAttributes.PHONE_NUMBER, userInfo.getPhoneNumber());
-		addUserAttribute(user, StandardAttributes.PICTURE, userInfo.getPicture());
-		addUserAttribute(user, StandardAttributes.PROFILE, userInfo.getProfile());
-		addUserAttribute(user, StandardAttributes.WEBSITE, userInfo.getWebsite());
-		addUserAttribute(user, StandardAttributes.ZONEINFO, userInfo.getZoneinfo());
-		addUserAttribute(user, StandardAttributes.GENDER, userInfo.getGender());
+			
+		user.setLastname(userInfo.getFamilyName());
+		if (StringUtils.isNotBlank(userInfo.getGivenName())) {
+			user.setFirstname(userInfo.getGivenName());
+		} else if (StringUtils.isNotBlank(userInfo.getName())) {
+			user.setFirstname(userInfo.getName());	
+		}
+		user.setLocale(userInfo.getLocale());
+		user.setMiddlename(userInfo.getMiddleName());
+		user.setNickname(userInfo.getNickname());
+		user.setPhone(userInfo.getPhoneNumber());
+		user.setPicture(userInfo.getPicture());
+		user.setProfile(userInfo.getProfile());
+		user.setWebsite(userInfo.getWebsite());
+		user.setZoneinfo(userInfo.getZoneinfo());
+		user.setGender(userInfo.getGender());
 		if (userInfo.getAddress() != null) {
 			Address addr = userInfo.getAddress();
-			addUserAttribute(user, StandardAttributes.FORMATTED_ADDRESS, addr.getFormatted());
-			addUserAttribute(user, StandardAttributes.STREET_ADDRESS, addr.getStreetAddress());
-			addUserAttribute(user, StandardAttributes.LOCALITY, addr.getLocality());
-			addUserAttribute(user, StandardAttributes.REGION, addr.getRegion());
-			addUserAttribute(user, StandardAttributes.POSTAL_CODE, addr.getPostalCode());
-			addUserAttribute(user, StandardAttributes.COUNTRY, addr.getCountry());
+			user.setFormattedAddress(addr.getFormatted());
+			user.setStreet(addr.getStreetAddress());
+			user.setLocality(addr.getLocality());
+			user.setRegion(addr.getRegion());
+			user.setPostalCode(addr.getPostalCode());
+			user.setCountry(addr.getCountry());
 		}
 		user.setEmailConfirmed(userInfo.getEmailVerified());
 		if (userInfo instanceof PropertiedUserInfo) {
@@ -173,50 +178,31 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
 	 * @return
 	 */
 	private PropertiedUserInfo userToUserInfo(User user) {
-		Collection<UserAttribute> attrs = user.getAttributes();
-		Map<String, String> amap = attributesToMap(attrs);
+		SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:MM:ssZ");
+		fmt.setTimeZone(TimeZone.getTimeZone("UTC"));
 		PropertiedUserInfo info = new PropertiedUserInfo();
 		info.setEmail(user.getEmail());
-		info.setFamilyName(amap.get(StandardAttributes.LAST_NAME.name()));
-		amap.remove(StandardAttributes.LAST_NAME.name());
-		info.setGender(amap.get(StandardAttributes.GENDER.name()));
-		amap.remove(StandardAttributes.GENDER.name());
-		info.setGivenName(amap.get(StandardAttributes.FIRST_NAME.name()));
-		amap.remove(StandardAttributes.FIRST_NAME.name());
-		info.setLocale(amap.get(StandardAttributes.LOCALE.name()));
-		amap.remove(StandardAttributes.LOCALE.name());
-		info.setMiddleName(amap.get(StandardAttributes.MIDDLE_NAME.name()));
-		amap.remove(StandardAttributes.MIDDLE_NAME.name());
-		info.setName(amap.get(StandardAttributes.NAME.name()));
-		amap.remove(StandardAttributes.NAME.name());
-		info.setNickname(amap.get(StandardAttributes.NICKNAME.name()));
-		amap.remove(StandardAttributes.NICKNAME.name());
-		info.setPhoneNumber(amap.get(StandardAttributes.PHONE_NUMBER.name()));
-		amap.remove(StandardAttributes.PHONE_NUMBER.name());
-		info.setPicture(amap.get(StandardAttributes.PICTURE.name()));
-		amap.remove(StandardAttributes.PICTURE.name());
-		info.setProfile(amap.get(StandardAttributes.PROFILE.name()));
-		amap.remove(StandardAttributes.PROFILE.name());
-		info.setUpdatedTime(amap.get(StandardAttributes.UPDATED_TIME.name()));
-		amap.remove(StandardAttributes.UPDATED_TIME.name());
+		info.setFamilyName(user.getLastname());
+		info.setGender(user.getGender());
+		info.setGivenName(user.getFirstname());
+		info.setLocale(user.getLocale());
+		info.setMiddleName(user.getMiddlename());
+		info.setName(user.getFirstname() + " " + user.getLastname());
+		info.setNickname(user.getNickname());
+		info.setPhoneNumber(user.getPhone());
+		info.setPicture(user.getPicture());
+		info.setProfile(user.getProfile());
+		info.setUpdatedTime(fmt.format(user.getUpdated()));
 		info.setUserId(user.getUsername());
 		info.setEmailVerified(user.getEmailConfirmed());
-		info.setWebsite(amap.get(StandardAttributes.WEBSITE.name()));
-		amap.remove(StandardAttributes.WEBSITE.name());
-		info.setZoneinfo(amap.get(StandardAttributes.ZONEINFO.name()));
-		amap.remove(StandardAttributes.ZONEINFO.name());
-		String street = amap.get(StandardAttributes.STREET_ADDRESS.name());
-		amap.remove(StandardAttributes.STREET_ADDRESS.name());
-		String faddr = amap.get(StandardAttributes.FORMATTED_ADDRESS.name());
-		amap.remove(StandardAttributes.FORMATTED_ADDRESS.name());
-		String locality = amap.get(StandardAttributes.LOCALITY.name());
-		amap.remove(StandardAttributes.LOCALITY.name());
-		String region = amap.get(StandardAttributes.REGION.name());
-		amap.remove(StandardAttributes.REGION.name());
-		String postal = amap.get(StandardAttributes.POSTAL_CODE.name());
-		amap.remove(StandardAttributes.POSTAL_CODE.name());
-		String country = amap.get(StandardAttributes.COUNTRY.name());
-		amap.remove(StandardAttributes.COUNTRY.name());
+		info.setWebsite(user.getWebsite());
+		info.setZoneinfo(user.getZoneinfo());
+		String street = user.getStreet();
+		String faddr = user.getFormattedAddress();
+		String locality = user.getLocality();
+		String region = user.getRegion();
+		String postal = user.getPostalCode();
+		String country = user.getCountry();
 		if (StringUtils.isNotBlank(street) || StringUtils.isNotBlank(faddr)
 				|| StringUtils.isNotBlank(locality)
 				|| StringUtils.isNotBlank(region)
@@ -231,6 +217,8 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
 			addr.setPostalCode(postal);
 			info.setAddress(addr);
 		}
+		Collection<UserAttribute> attrs = user.getAttributes();
+		Map<String, String> amap = attributesToMap(attrs);
 		// Handle the extended properties
 		for(String key : amap.keySet()) {
 			String value = amap.get(key);
@@ -253,21 +241,6 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
 			rval.put(attr.getName(), attr.getValue());
 		}
 		return rval;
-	}
-	
-	/**
-	 * Add the named attribute to the user if not blank/null
-	 * @param user
-	 * @param attr
-	 * @param value
-	 */
-	private void addUserAttribute(User user, StandardAttributes name, String value) {
-		if (StringUtils.isNotBlank(value)) {
-			if (user.getAttributes() == null) {
-				user.setAttributes(new HashSet<UserAttribute>());
-			}
-			user.getAttributes().add(new UserAttribute(name, value));
-		}
 	}
 	
 	/**

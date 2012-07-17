@@ -18,6 +18,8 @@
  ***************************************************************************************/
 package org.mitre.openid.connect.repository.db.model;
 
+import java.io.Serializable;
+
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -31,7 +33,7 @@ import javax.persistence.Table;
 @Table(name = "ROLES")
 @NamedQuery(name = "roles.by_name",
 	query = "select r from Role r where r.name = :name")
-public class Role {
+public class Role implements Serializable {
 	private Long id;
 	private String name;
 	private String description;

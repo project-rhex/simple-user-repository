@@ -1,10 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1" import="org.mitre.openid.connect.repository.db.util.*,java.util.*,org.apache.commons.lang.*" %>
+	pageEncoding="ISO-8859-1" import="org.mitre.openid.connect.repository.db.util.*,java.util.*,org.apache.commons.lang.*" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="o" tagdir="/WEB-INF/tags" %> 
+<%@ taglib prefix="o" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
 <o:header title="User Management - ${label} User Page" />
 <o:topbar />
 <o:includes />
@@ -38,17 +36,48 @@
 </select>
 </div>
 <div class="row">
-<label class="span2" for="first_name_field">First Name</label>
-<input id="first_name_field" class="span4" size="40" value="${first_name_field}">
+<label class="span2" for="firstname_field">First Name</label>
+<input id="firstname_field" class="span4" size="48" value="${firstname_field}">
 </div>
 <div class="row">
-<label class="span2" for="last_name_field">Last Name</label>
-<input id="last_name_field" class="span4" size="40" value="${last_name_field}">
+<label class="span2" for="middlename_field">Middle Name</label>
+<input id="middlename_field" class="span4" size="48" value="${middlename_field}">
+</div>
+<div class="row">
+<label class="span2" for="lastname_field">Last Name</label>
+<input id="lastname_field" class="span4" size="48" value="${lastname_field}">
+</div>
+<div class="row">
+<label class="span2" for="nickname_field">Nickname</label>
+<input id="nickname_field" class="span4" size="48" value="${nickname_field}">
+</div>
+<div class="row">
+<label class="span2" for="gender_field">Gender</label>
+<select id="gender_field" span="span3">
+   <option value="M" <c:if test="${gender_field == 'M'}">selected</c:if> >Male</option>
+   <option value="F" <c:if test="${gender_field == 'F'}">selected</c:if> >Female</option>
+</select>
 </div>
 <div class="row">
 <label class="span2" for="email_field">Email</label>
-<input id="email_field" class="span4" size="40" value="${email_field}">
+<input id="email_field" class="span4" size="64" value="${email_field}">
 <span id="email_errors" class="span3 errors"></span>
+</div>
+<div class="row">
+<label class="span2" for="street_field">Street</label>
+<input id="street_field" class="span4" size="64" value="${street_field}">
+</div>
+<div class="row">
+<label class="span2" for="locality_field">Locality</label>
+<input id="locality_field" class="span4" size="32" value="${locality_field}">
+</div>
+<div class="row">
+<label class="span2" for="region_field">Region</label>
+<input id="region_field" class="span4" size="32" value="${region_field}">
+</div>
+<div class="row">
+<label class="span2" for="postalCode_field">Postal Code</label>
+<input id="postalCode_field" class="span4" size="32" value="${postalCode_field}">
 </div>
 <div class="row">
 <label class="span2" for="password_field">Password</label>
@@ -58,6 +87,22 @@
 <div class="row">
 <label class="span2" for="password_repeat_field">Re-Type Password</label>
 <input type='password' id="password_repeat_field" class="span4">
+</div>
+<div class="row">
+<label class="span2" for="phone_field">Phone number</label>
+<input id="phone_field" class="span4" size="32" value="${phone_field}">
+</div>
+<div class="row">
+<label class="span2" for="profile_field">Profile</label>
+<input id="profile_field" class="span4" size="80" value="${profile_field}">
+</div>
+<div class="row">
+<label class="span2" for="website_field">Website</label>
+<input id="website_field" class="span4" size="80" value="${website_field}">
+</div>
+<div class="row">
+<label class="span2" for="picture_field">Picture</label>
+<input id="picture_field" class="span4" size="80" value="${picture_field}">
 </div>
 <div class="row">
 <label class="span2" for="role">Clinical role</label>

@@ -36,7 +36,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mitre.openid.connect.repository.SortBy;
-import org.mitre.openid.connect.repository.StandardAttributes;
 import org.mitre.openid.connect.repository.UserManager;
 import org.mitre.openid.connect.repository.db.model.Role;
 import org.mitre.openid.connect.repository.db.model.User;
@@ -356,8 +355,10 @@ public class TestUserImpl {
 		usermanager.add(username, password);
 		User u = usermanager.get(username);
 		u.setEmail(email);
-		u.getAttributes().add(new UserAttribute(StandardAttributes.FIRST_NAME, firstname, u));
-		u.getAttributes().add(new UserAttribute(StandardAttributes.LAST_NAME, lastname, u));
+		u.setFirstname(firstname);
+		u.setLastname(lastname);
+		u.getAttributes().add(new UserAttribute("HEIGHT", "64", u));
+		u.getAttributes().add(new UserAttribute("WEIGHT", "143", u));
 		usermanager.save(u);
 	
 		
