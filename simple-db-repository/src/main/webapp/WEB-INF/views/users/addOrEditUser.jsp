@@ -20,8 +20,6 @@
 	}
 	bc.add(new Breadcrumb(label + " User"));
 	request.setAttribute("bc", bc);
-	String titles[] = {"Dr", "Mr", "Ms", "Mrs", "Miss"};
-	request.setAttribute("titles", titles);
 %>
 <o:header />
 <o:breadcrumbs-db breadcrumbs="${bc}" />
@@ -30,9 +28,11 @@
 <div class="row">
 <label class="span2" for="title_field">Title</label>
 <select id="title_field" class="span2">
-	<c:forEach var="title" items="${titles}">
-		<option value="${title}" <c:if test="${title == title_field}">selected</c:if> >${title}</option>
-	</c:forEach>
+	<option value="Dr" <c:if test="${title_field == 'Dr'}">selected</c:if> >Dr</option>
+	<option value="Mr" <c:if test="${title_field == 'Mr'}">selected</c:if> >Mr</option>
+	<option value="Ms" <c:if test="${title_field == 'Ms'}">selected</c:if> >Ms</option>
+	<option value="Mrs" <c:if test="${title_field == 'Mrs'}">selected</c:if> >Mrs</option>
+	<option value="Miss" <c:if test="${title_field == 'Miss'}">selected</c:if> >Miss</option>
 </select>
 </div>
 <div class="row">

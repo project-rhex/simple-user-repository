@@ -19,6 +19,12 @@ usr = {
 	  usr.results = {};
 	  $("input").each(usr.process_input);  
 	  $("select").each(usr.process_input);
+	  // Fixup admin_role, which is a checkbox
+	  if ($("#admin_role_field:checked").size() > 0) {
+		usr.results["admin_role"] = "on";
+	  } else {
+		usr.results["admin_role"] = null;
+	  }
 	  var errors = false;
 	  var em = usr.results["email"];
 	  if (em == null || em.trim() == "") {

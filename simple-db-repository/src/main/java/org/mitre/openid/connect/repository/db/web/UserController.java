@@ -219,8 +219,10 @@ public class UserController {
 			// Copy other user attributes as _field values
 			Map<String,String> attrs = attrsToMap(user);
 			Set<String> keys = attrs.keySet();
-			keys.remove("title_field");
 			keys.remove("user-id_field");
+			// Promote title_field as if it were a first class field
+			mav.addObject("title_field", attrs.get("title_field"));
+			keys.remove("title_field");
 			mav.addObject("properties", keys);
 			mav.addObject("propertymap", attrs);
 		}
@@ -297,20 +299,11 @@ public class UserController {
             }
         }
         // Grab other attributes - the json is not really a User serialization
-        boolean patient = false, clinician = false;
         JsonObject data = (JsonObject) obj;    
         for(Entry<String, JsonElement> entry : data.entrySet()) {
         	String key = entry.getKey();
         	JsonElement value = entry.getValue();
         	if (FIELDS.contains(key)) continue;
-        	if (key.equals("patient")) {
-        		patient = true;
-        		continue;
-        	}
-        	if (key.equals("clinician")) {
-        		clinician = true;
-        		continue;
-        	}
         	if (postedUser.getAttributes() == null) {
         		postedUser.setAttributes(new HashSet<UserAttribute>());
         	}
@@ -326,8 +319,9 @@ public class UserController {
             postedUser.setId(userId);
         }
         
-        // Clear and add new roles
-        if (clinician = true) {
+        // Fix roles
+        JsonElement role = data.get("role");
+        if (role.getAsString().equalsIgnoreCase("CLINICIAN")) {
         	postedUser.getRoles().add(userManager.findOrCreateRole("CLINICIAN"));
         	postedUser.getRoles().remove(userManager.findOrCreateRole("PATIENT"));
         } else {
@@ -335,7 +329,7 @@ public class UserController {
         	postedUser.getRoles().remove(userManager.findOrCreateRole("CLINICIAN"));
         }
         JsonElement admin_role = data.get("admin_role");
-        if (admin_role != null) {
+        if (! admin_role.isJsonNull()) {
         	postedUser.getRoles().add(userManager.findRole("ADMIN"));
         } else {
         	postedUser.getRoles().remove(userManager.findRole("ADMIN"));
