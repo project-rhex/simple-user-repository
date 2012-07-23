@@ -73,8 +73,11 @@ import javax.mail.internet.MimeUtility;
 			query = "select u from User u order by u.firstname"),
 		@NamedQuery(name = "users.by_last_name", 
 			query = "select u from User u order by u.lastname"),
+		// FIXME: users.by_username is already taken by something that actually finds just one user
+	    @NamedQuery(name = "users.sort_by_username", 
+            query = "select u from User u order by u.username"),
 		@NamedQuery(name = "users.by_email", 
-			query = "select u from User u order by u.email"),			
+			query = "select u from User u order by u.email"),
 		@NamedQuery(name = "users.by_username",
 			query = "select u from User u where u.username = :username"),
 		@NamedQuery(name = "users.by_admin_role",

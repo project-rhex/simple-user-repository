@@ -204,19 +204,12 @@ public class UserManagerImpl implements UserManager {
 	@SuppressWarnings("unchecked")
 	public List<Map<String, String>> findInRange(int first, int count, SortBy sortBy) {
 		List<User> users;
-		if (sortBy.equals(SortBy.USERNAME) || sortBy.equals(SortBy.EMAIL)) {
-			TypedQuery<User> uq = (TypedQuery<User>) em.createQuery(
-					"select u from User u order by u." + sortBy.name().toLowerCase());
-			users = uq.setFirstResult(first)
-					.setMaxResults(count)
-					.getResultList();
-		} else {
-			TypedQuery<User> uq = (TypedQuery<User>) em.createNamedQuery("users.by_user_attribute_name");
-			users = uq.setParameter("attr", sortBy.name())
-					.setFirstResult(first)
-					.setMaxResults(count)
-					.getResultList();
-		}
+
+        TypedQuery<User> uq = (TypedQuery<User>) em.createNamedQuery(sortBy.getNamedQuery());
+        users = uq.setFirstResult(first)
+                  .setMaxResults(count)
+                  .getResultList();
+
 		List<Map<String,String>> rval = new ArrayList<Map<String,String>>();
 		for(User u : users) {
 			Map<String, String> data = new HashMap<String, String>();
