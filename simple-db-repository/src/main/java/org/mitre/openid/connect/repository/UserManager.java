@@ -24,6 +24,7 @@ import java.util.Map;
 
 import javax.naming.AuthenticationException;
 
+import org.mitre.openid.connect.model.UserInfo;
 import org.mitre.openid.connect.repository.db.LockedUserException;
 import org.mitre.openid.connect.repository.db.PasswordException;
 import org.mitre.openid.connect.repository.db.UserException;
@@ -197,6 +198,13 @@ public interface UserManager {
      * @return a list of matching users
      */
     List<User> find(String likePattern);
+    
+    /**
+     * Find user or users that match a give user name. 
+     * @param username the user's name given as a proper string. It should be lower cased before being passed in.
+     * @return a list of possible matches.
+     */
+    List<User> findByUsername(String username);
 
     /**
      * Retrieve a set of information sorted by the given attribute

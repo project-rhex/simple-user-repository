@@ -121,6 +121,102 @@ public class TestUserInfoRepository {
 		assertEquals("http://www.linkedin.com/mesmith", ui.getWebsite());
 		assertEquals("zone1", ui.getZoneinfo());
 		assertEquals("36", ui.getProperty("AGE"));
+		
+	}
+	
+	@Test
+	public void testAmbiguousNameCases() throws Exception {
+		PropertiedUserInfo userInfo = new PropertiedUserInfo();
+		Address addr = new Address();
+		addr.setLocality("Chelmsford");
+		addr.setRegion("Massachusetts");
+		addr.setPostalCode("01824");
+		addr.setStreetAddress("126 Penny Lane");
+		addr.setFormatted("126 Penny Ln, Chelmsford, MA 01824");
+		addr.setCountry("USA");
+		
+		userInfo.setUserId("adjones");
+		userInfo.setAddress(addr);
+		userInfo.setEmail("ajones@aol.com");
+		userInfo.setGender("F");
+		userInfo.setFamilyName("Jones");
+		userInfo.setGivenName("Alice");
+		userInfo.setLocale("en-US");
+		userInfo.setMiddleName("Dawn");
+		userInfo.setName("Alice Jones");
+		userInfo.setNickname("Ali");
+		userInfo.setPhoneNumber("978 256 1111");
+		userInfo.setPicture("http://www.flicker.com/123456.png");
+		userInfo.setProfile("http://www.facebook.com/mesmith");
+		userInfo.setWebsite("http://www.linkedin.com/mesmith");
+		userInfo.setProperty("AGE", "23");
+		userInfo.setZoneinfo("zone1");
+		userinforepo.save((DefaultUserInfo) userInfo );
+		
+		userInfo.setUserId("agjones");
+		userInfo.setAddress(addr);
+		userInfo.setEmail("ajones@aol.com");
+		userInfo.setGender("F");
+		userInfo.setFamilyName("Jones");
+		userInfo.setGivenName("Alice");
+		userInfo.setLocale("en-US");
+		userInfo.setMiddleName("Grace");
+		userInfo.setName("Alice Jones");
+		userInfo.setNickname("Ali");
+		userInfo.setPhoneNumber("978 256 1111");
+		userInfo.setPicture("http://www.flicker.com/123456.png");
+		userInfo.setProfile("http://www.facebook.com/mesmith");
+		userInfo.setWebsite("http://www.linkedin.com/mesmith");
+		userInfo.setProperty("AGE", "23");
+		userInfo.setZoneinfo("zone1");
+		userinforepo.save((DefaultUserInfo) userInfo );
+		
+		userInfo.setUserId("ajjones");
+		userInfo.setAddress(addr);
+		userInfo.setEmail("ajones@aol.com");
+		userInfo.setGender("F");
+		userInfo.setFamilyName("Jones");
+		userInfo.setGivenName("Alice");
+		userInfo.setLocale("en-US");
+		userInfo.setMiddleName("Jennifer");
+		userInfo.setName("Alice Jones");
+		userInfo.setNickname("Ali");
+		userInfo.setPhoneNumber("978 256 1111");
+		userInfo.setPicture("http://www.flicker.com/123456.png");
+		userInfo.setProfile("http://www.facebook.com/mesmith");
+		userInfo.setWebsite("http://www.linkedin.com/mesmith");
+		userInfo.setProperty("AGE", "23");
+		userInfo.setZoneinfo("zone1");
+		userinforepo.save((DefaultUserInfo) userInfo );
+		
+		userInfo.setUserId("ajones");
+		userInfo.setAddress(addr);
+		userInfo.setEmail("ajones@aol.com");
+		userInfo.setGender("F");
+		userInfo.setFamilyName("Jones");
+		userInfo.setGivenName("Alice");
+		userInfo.setLocale("en-US");
+		userInfo.setMiddleName(null);
+		userInfo.setName("Alice Jones");
+		userInfo.setNickname("Ali");
+		userInfo.setPhoneNumber("978 256 1111");
+		userInfo.setPicture("http://www.flicker.com/123456.png");
+		userInfo.setProfile("http://www.facebook.com/mesmith");
+		userInfo.setWebsite("http://www.linkedin.com/mesmith");
+		userInfo.setProperty("AGE", "23");
+		userInfo.setZoneinfo("zone1");
+		userinforepo.save((DefaultUserInfo) userInfo );	
+		
+		UserInfo u = null;
+		
+		assertNotNull(u = userinforepo.getByUsername("Alice Jones"));
+		assertNull(u.getMiddleName());
+		assertNotNull(u = userinforepo.getByUsername("Alice Dawn Jones"));
+		assertEquals("Dawn", u.getMiddleName());
+		assertNotNull(u = userinforepo.getByUsername("Alice Grace Jones"));
+		assertEquals("Grace", u.getMiddleName());
+		assertNotNull(u = userinforepo.getByUsername("Alice Jennifer Jones"));
+		assertEquals("Jennifer", u.getMiddleName());
 	}
 	
 	@Test
@@ -136,12 +232,12 @@ public class TestUserInfoRepository {
 		
 		userInfo.setUserId("ajones");
 		userInfo.setAddress(addr);
-		userInfo.setEmail("ajones@aol.com");
+		userInfo.setEmail("acjones@aol.com");
 		userInfo.setGender("F");
 		userInfo.setFamilyName("Jones");
 		userInfo.setGivenName("Alice");
 		userInfo.setLocale("en-US");
-		userInfo.setMiddleName("Dawn");
+		userInfo.setMiddleName("Carol");
 		userInfo.setName("Alice Jones");
 		userInfo.setNickname("Ali");
 		userInfo.setPhoneNumber("978 256 1111");

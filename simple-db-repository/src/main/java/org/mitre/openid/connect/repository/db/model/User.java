@@ -87,7 +87,11 @@ import javax.mail.internet.MimeUtility;
 		@NamedQuery(name = "users.all",
 			query = "select u from User u"),
 		@NamedQuery(name = "users.count",
-			query = "select count(u) from User u")
+			query = "select count(u) from User u"),
+		@NamedQuery(name = "users.username",
+			query = "select u from User u where " +
+					"(lower(concat(u.firstname, ' ', u.lastname)) = :name and (u.middlename is null or length(trim(u.middlename)) = 0)) or " +
+					"(lower(concat(u.firstname, ' ', u.middlename, ' ', u.lastname)) = :name)")
 })
 public class User implements UserDetails, Serializable {
 	private Long id;

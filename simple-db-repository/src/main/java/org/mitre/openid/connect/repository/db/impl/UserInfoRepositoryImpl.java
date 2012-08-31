@@ -69,6 +69,22 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
 		}
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see org.mitre.openid.connect.repository.UserInfoRepository#getByUsername(java.lang.String)
+	 */
+	public UserInfo getByUsername(String username) {
+		if (StringUtils.isBlank(username)) {
+			throw new IllegalArgumentException("username is required");
+		}
+		List<User> users = userManager.findByUsername(username);
+		if (users.size() == 0) {
+			return null;
+		} else {
+			return userToUserInfo(users.get(0));
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.mitre.openid.connect.repository.UserInfoRepository#save(org.mitre.openid.connect.model.UserInfo)
 	 */

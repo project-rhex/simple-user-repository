@@ -21,8 +21,8 @@ package org.mitre.openid.connect.repository.db.impl;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -195,6 +195,15 @@ public class UserManagerImpl implements UserManager {
 		@SuppressWarnings("unchecked")
 		TypedQuery<User> uq = (TypedQuery<User>) em.createNamedQuery("users.like_name");
 		List<User> results = uq.setParameter("pattern", likePattern.toLowerCase()).getResultList();
+		return results;
+	}
+	
+	public List<User> findByUsername(String username) {
+		if (StringUtils.isBlank(username)) {
+			throw new IllegalArgumentException("username is required");
+		} 
+		TypedQuery<User> uq = (TypedQuery<User>) em.createNamedQuery("users.username");
+		List<User> results = uq.setParameter("name", username.toLowerCase()).getResultList();
 		return results;
 	}
 	
