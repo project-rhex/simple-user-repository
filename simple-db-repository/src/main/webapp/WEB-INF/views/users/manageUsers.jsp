@@ -2,8 +2,11 @@
     pageEncoding="ISO-8859-1" import="org.mitre.openid.connect.repository.db.util.*,java.util.*" %>
 <%@ taglib prefix="o" tagdir="/WEB-INF/tags" %> 
 
+<o:header title="User Management - User List Page" />
+<o:topbar />
+<o:includes />
 <%
-	String base = (String) request.getAttribute("base"); // Calculated in o:head
+	String base = (String) request.getAttribute("base"); // Calculated in o:include
 	String p = request.getParameter("page");
 	if (p != null && p.trim().length() > 0) {
 		request.setAttribute("page", new Integer(p));
@@ -21,9 +24,6 @@
 	bc.add(new Breadcrumb("Manage Users"));
 	request.setAttribute("bc", bc);
 %>   
-<o:header title="User Management - User List Page" />
-<o:topbar />
-<o:includes />
 <o:header />
 <o:breadcrumbs-db breadcrumbs="${bc}" />
 <h2 class="span12">Manage Users</h2>

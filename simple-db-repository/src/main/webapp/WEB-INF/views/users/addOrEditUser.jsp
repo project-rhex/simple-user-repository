@@ -7,10 +7,10 @@
 <o:topbar />
 <o:includes />
 <%
-	String base = (String) request.getAttribute("base"); // Calculated in o:head
+	String base = (String) request.getAttribute("base"); // Calculated in o:include
 	String label = (String) request.getAttribute("label");
 	List<Breadcrumb> bc = new java.util.ArrayList<Breadcrumb>();
-	bc.add(new Breadcrumb("Home", base + "/"));
+	bc.add(new Breadcrumb("Home", base +"/"));
 	bc.add(new Breadcrumb("Manage Users", base + "/users/manageUsers"));
 	if (label == null) {
 		label = "New";
