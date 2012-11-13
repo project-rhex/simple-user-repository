@@ -29,4 +29,4 @@ $(document).ready(function() {
 
 <o:copyright/>
 </div>
-<o:footer loadapp="false"/>
+<o:footer/>
